@@ -15,7 +15,7 @@
 
 - Bitonic Sort:
 - Sample Sort:
-- Merge Sort: Parallel Merge Sort uses the divide and conquer technique, recursively dividing the dataset into smaller parts, sorting them, and merging the results where in parallel ver. it is distributed across multiple processors. Parallel Merge Sort will be implemented using MPI. Each processor will perform its own sorting idenpendently, merging sorted data using MPI communication.
+- Merge Sort: 
 - Radix Sort:
 
 ### 2b. Pseudocode for each parallel algorithm
@@ -45,6 +45,7 @@ sorted paritions are merged to obtain the final sorted result.
 8. Finally, each processor merges and sorts the recieved elements.
 
 #### 2b.3 Merge Sort
+Parallel Merge Sort uses the divide and conquer technique, recursively dividing the dataset into smaller parts, sorting them, and merging the results where in parallel ver. it is distributed across multiple processors. Parallel Merge Sort will be implemented using MPI. Each processor will perform its own sorting idenpendently, merging sorted data using MPI communication.
 
 1. Start MPI for Communication between processors.
 2. Identify if the process is the master (rank 0) or worker (rank > 0)
