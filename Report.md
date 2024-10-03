@@ -15,7 +15,7 @@
 
 - Bitonic Sort:
 - Sample Sort:
-- Merge Sort: Parallel Merge Sort uses the divide and conquer technique, recursively dividing the dataset into smaller parts, sorting them, and merging the results where in parallel ver. it is distributed across multiple processors. Parallel Merge Sort will be implemented using MPI.
+- Merge Sort: Parallel Merge Sort uses the divide and conquer technique, recursively dividing the dataset into smaller parts, sorting them, and merging the results where in parallel ver. it is distributed across multiple processors. Parallel Merge Sort will be implemented using MPI. Each processor will perform its own sorting idenpendently, merging sorted data using MPI communication.
 - Radix Sort:
 
 ### 2b. Pseudocode for each parallel algorithm
