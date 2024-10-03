@@ -20,9 +20,9 @@
 
 ### 2b. Pseudocode for each parallel algorithm
 
-### 2b.1 Bitonic Sort
+#### 2b.1 Bitonic Sort
 
-### 2b.2 Sample Sort
+#### 2b.2 Sample Sort
 
 In sample sort a large dataset is divided into smaller paritions,
 after which each partition is sorted independently, and then these
@@ -53,9 +53,9 @@ STEP 8: Finally, each processor merges and sorts the recieved elements.
 
 - For MPI programs, include MPI calls you will use to coordinate between processes
 
-### 2b.3 Merge Sort
+#### 2b.3 Merge Sort
 
-### 2b.4 Radix Sort
+#### 2b.4 Radix Sort
 
 ### 2c. Evaluation plan - what and how will you measure and compare
 
