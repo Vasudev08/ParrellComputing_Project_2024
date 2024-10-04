@@ -9,10 +9,10 @@
 3. Nicole Hernandez
 4. Vasudev Agarwal
 
-## 2. Project topic (e.g., parallel sorting algorithms)
+## 2. Parallel Sorting Algorithms 
 
 ### 2a. Brief project description (what algorithms will you be comparing and on what architectures)
-
+In this project, we will be comparing the efficiencies of different sorting algorithms running in parallel. We will each work on the below algorithms: 
 - Bitonic Sort: Anna Hartman
 - Sample Sort: Vasudev Agarwal
 - Merge Sort: Nicole Hernandez
