@@ -9,6 +9,8 @@
 3. Nicole Hernandez
 4. Vasudev Agarwal
 
+We will be communicating via text message.
+
 ## 2. Parallel Sorting Algorithms 
 
 ### 2a. Brief project description (what algorithms will you be comparing and on what architectures)
