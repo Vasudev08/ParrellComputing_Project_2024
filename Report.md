@@ -1,6 +1,6 @@
 # CSCE 435 Group project
 
-## 0. Group number:
+## 0. Group number: 18
 
 ## 1. Group members:
 
@@ -64,7 +64,19 @@ Parallel Merge Sort uses the divide and conquer technique, recursively dividing 
 8. Close MPI after sorting is complete
 
 #### 2b.4 Radix Sort
+Radix Sort is an algorithm that sorts by processing through individual digits, sorting along the way. The process can be sped up by allowing each processor to handle a portion of the total array. By sorting a subarray and keeping note of the order of subarray chunks being sorted in each processor, they can be placed accordingly back into the main array. While this example sorts via binary, the process can account for numbers of any base as long as the # of arrays corresponds correctly.
 
+1. Initialize MPI for multiprocessor communication
+2. Convert array digits into binary (helps with initial implementation).
+3. Find the maximum element and its # of digits.
+5. Begin iterating through digits starting at the least significant digit up to the maximum digit significance.
+7. Split the array into subarrays depending on the # of processors used and send to workers,
+   keeping track of the order in which each subarray gets sent where.
+9. Each worker will sort its subarray into 2 arrays, the first with digits that are 0, the second with digits that are 1.
+10. Worker returns arrays and master combines the 0 array in order of worker process, then repeats for the 1 array.
+11. Repeat with the next digit until all digits places have been parsed.
+12. End MPI once complete.
+   
 ### 2c. Evaluation plan - what and how will you measure and compare
 
 - Input sizes, Input types
