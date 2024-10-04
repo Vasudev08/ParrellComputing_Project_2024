@@ -79,6 +79,8 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
    
 ### 2c. Evaluation plan - what and how will you measure and compare
 
-- Input sizes, Input types
+- Input sizes, Input types (Alter input array to be: random, sorted, reverse sorted,...)
 - Strong scaling (same problem size, increase number of processors/nodes)
 - Weak scaling (increase problem size, increase number of processors)
+- Parallelization strategies (master/worker vs SPMD, calculating speedup and runtime differences)
+- Communication strategies (collectives vs point-to-point, measure runtime differences between code for each communication strategy)
