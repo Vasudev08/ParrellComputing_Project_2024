@@ -13,14 +13,21 @@
 
 ### 2a. Brief project description (what algorithms will you be comparing and on what architectures)
 
-- Bitonic Sort:
-- Sample Sort:
-- Merge Sort: 
-- Radix Sort:
+- Bitonic Sort: Anna Hartman
+- Sample Sort: Vasudev Agarwal
+- Merge Sort: Nicole Hernandez
+- Radix Sort: Tate Moskal
 
 ### 2b. Pseudocode for each parallel algorithm
 
 #### 2b.1 Bitonic Sort
+In Bitonic sort, a bitonic sequence is built (a sequence that first increases and then decreases) and sorted by merging. Within multiple threads, chunks of the given sequence are sorted into bitonic order. The merging process is carried out in parallel, merging each piece into a large bitonic sequence. Threads should be synchronized. The entire algorithm is carried out recursively in order to build the final bitonic sequence. 
+
+1. Divide the given array to be sorted into parallel chunks with corresponding threads
+2. For each thread ands its piece (in parallel): sort the piece into bitonic order by recursively splitting the piece into two halves and sorting the first half into ascending order and the second into descending order, and then merging the two haves into a bitonic sequence.
+3. Synchronize threads by ensuring each thread has completed its sorting before continuing on.
+4. Merge all of the pieces bitonically (in parallel), for each chunk and thread: compare and swap such that if the current chunk is in the lower half, merge it in ascending order, and if it is in the upper half, merge it in descending order. Recursively merge the two halves of the sequence to ensure they are fully sorted in either ascending or descending order. This should be carried out log(array_size) times, as each chunk doubles in size after being recursively merged. 
+5. Output the result. 
 
 #### 2b.2 Sample Sort
 
