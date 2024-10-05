@@ -13,7 +13,7 @@ Our team will communicate primarily through Text message for real-time discussio
 
 ## 2. Parallel Sorting Algorithms 
 
-### 2a. Brief project description (what algorithms will you be comparing and on what architectures)
+### 2a. Brief project description
 In this project, we will be comparing the efficiencies of different sorting algorithms running in parallel. The algorithms will be implemented and tested on parallel architectures, such as multi-core processors and possibly distributed systems. Each team member will focus on one of the following algorithms:
 
 - Bitonic Sort: Anna Hartman
