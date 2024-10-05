@@ -9,7 +9,7 @@
 3. Nicole Hernandez
 4. Vasudev Agarwal
 
-We will be communicating via text message.
+Our team will communicate primarily through Text message for real-time discussions and updates. We will also use GitHub to track code contributions and Trello for project management, ensuring transparency and accountability for task assignments.
 
 ## 2. Parallel Sorting Algorithms 
 
@@ -20,6 +20,8 @@ In this project, we will be comparing the efficiencies of different sorting algo
 - Sample Sort: Vasudev Agarwal
 - Merge Sort: Nicole Hernandez
 - Radix Sort: Tate Moskal
+
+The comparison will assess execution time, we will evaluate the efficiency on different input sizes (small, medium, large) to measure scalability, and analyzing how these algorithms leverage parallelism to improve sorting performance.
 
 ### 2b. Pseudocode for each parallel algorithm
 
