@@ -1,7 +1,6 @@
 /*
 In sample sort a large dataset is divided into smaller paritions, after which each partition is sorted independently, and then these sorted paritions are merged to obtain the final sorted result.
 
-- Splitting the given dataset into equally divided smaller segments, where each segement is given to a processor
 - Run basic sorting algorithm on each of the segments, where each processor is handling its piece independently.
 - From these sorted segments, each processor selects few samples. then, MPI communication is used to collect samples from all processors
 - Sort the selected samples, which will help us establish a global order among the samples.
@@ -14,6 +13,8 @@ In sample sort a large dataset is divided into smaller paritions, after which ea
 
 #include <iostream>
 #include <fstream>
+#include <mpi.h>
+
 
 using namespace std;
 
@@ -28,6 +29,15 @@ int read_file(std::ifstream& lineInput, int* array) {
     return i;
 
 }
+
+void print_array(int* array, int count) {
+    std::cout << "Numbers read from the file: ";
+    for (int i = 0; i < count; i++) {
+        std::cout << array[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
 
 int main(int agrc, char* argv[]) {
     if (agrc != 2) {
@@ -46,13 +56,29 @@ int main(int agrc, char* argv[]) {
     int array[MAX_SIZE];
 
     int count = read_file(input, array);
-    input.close(); // Close the input file
 
-    std::cout << "Numbers read from the file: ";
-    for (int i = 0; i < count; i++) {
-        std::cout << array[i] << " ";
-    }
-    std::cout << std::endl;
+    print_array(array, count);
+
+    input.close();
+
+    int n;
+    n = count;
+
+    int numProcess, processId;
+
+    double startTime, endTime;
+
+    //Splitting the given dataset into equally divided smaller segments, where each segement is given to a processor
+    
+    MPI_Init(&agrc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcess);
+    MPI_Comm_rank(MPI_COMM_WORLD, &processId); 
+    printf("MPI process %d has started...\n", processId);
+
+
+
+
+
 
     return 0;
 

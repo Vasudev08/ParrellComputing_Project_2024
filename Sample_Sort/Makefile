@@ -1,7 +1,7 @@
 # Makefile for Sample Sort Test Program
 
 # Compiler
-CXX = g++
+CXX = mpic++
 
 # Compiler flags
 CXXFLAGS = -Wall -g
