@@ -1,8 +1,4 @@
 /*
-- Sort the selected samples, which will help us establish a global order among the samples.
-- From the sorted samples, we pick few speical elements. which act as a pivot. which are shared with all processors. MPI_Bcast is used to broadcast the pivots to all processors.
-- Each processor takes its ordered segment and divides it into subsegments based on the choicen pivot.
-- Now, processors share their ordered segments globally with the corresponding processor based on the segment number. using MPI_Alltoall
 - Finally, each processor merges and sorts the recieved elements.
 
 */
@@ -10,6 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include <mpi.h>
+#include <cmath> 
+
 
 #define MASTER 0
 
@@ -87,6 +85,16 @@ void quickSort(int arr[], int start, int end) {
     quickSort(arr, p + 1, end);
 }
 
+void merge_elements(int arr[], int counts[], int k) {
+	int totalelements = 0;
+
+	for (int i = 0; i < k; i++) {
+		totalelements = totalelements + counts[i];
+	}
+
+	quickSort(arr, 0, totalelements - 1);
+}
+
 
 void print_array(int* array, int count) {
     std::cout << "Numbers read from the file: ";
@@ -95,6 +103,40 @@ void print_array(int* array, int count) {
     }
     std::cout << std::endl;
 }
+
+void multiPivotPartition(int arr[], int n, int pivots[], int numPivots, int** segments) {
+    int SegmentStartIndex = 0;
+
+    for (int i = 0; i < numPivots; ++i) {
+        int pivot = pivots[i];
+        int segmentEndIndex = SegmentStartIndex;
+
+        while (segmentEndIndex < n && arr[segmentEndIndex] <= pivot) {
+            ++segmentEndIndex;
+        }
+
+        if (segmentEndIndex > SegmentStartIndex) {
+            segments[i][0] = SegmentStartIndex;
+            segments[i][1] = segmentEndIndex - 1;
+
+        } else {
+            segments[i][0] = segments[i][1] = -1;
+        }
+
+        SegmentStartIndex = segmentEndIndex;
+    }
+
+    if (SegmentStartIndex < n) {
+        segments[numPivots][0] = SegmentStartIndex;
+        segments[numPivots][1] = n - 1;
+
+    } else {
+        segments[numPivots][0] = segments[numPivots][1] = -1;
+    }
+
+}
+
+
 
 
 int main(int agrc, char* argv[]) {
@@ -113,7 +155,7 @@ int main(int agrc, char* argv[]) {
     const int MAX_SIZE = 100; // You can adjust this size based on your input
     int array[MAX_SIZE];
 
-    int count = elementCount(input, array);
+    int count = elementCount(input);
 
     print_array(array, count);
 
@@ -124,7 +166,7 @@ int main(int agrc, char* argv[]) {
 
     int numProcess, processId;
 
-    double startTime, endTime;
+    double startTime;
 
     //Splitting the given dataset into equally divided smaller segments, where each segement is given to a processor
     
@@ -143,6 +185,9 @@ int main(int agrc, char* argv[]) {
     int* sendBuffer = NULL;
     if (processId == MASTER) {
         sendBuffer = (int*)malloc(n * sizeof(int));
+        int arraySize = read_file(input, sendBuffer);
+        cout << arraySize << endl;
+
 
     }
 
@@ -155,19 +200,140 @@ int main(int agrc, char* argv[]) {
 
 
     //From these sorted segments, each processor selects few samples. then, MPI communication is used to collect samples from all processors
-    int pivotSelectThresold = n / (numProcess * numProcess); // elements to skip for selecting pivots
-    int* processPivots = (int*)malloc(numProcess * sizeof(int));
-    for (int i = 0, j = 0, i < nPerProcess; i = i + pivotSelectThresold) {
-        processPivots[j] = receiveBuffer[i];
-        j++
+    int sampleSelectThresold = n / (numProcess * numProcess); // elements to skip for selecting pivots
+    int* processSamples = (int*)malloc(numProcess * sizeof(int));
+    for (int i = 0, j = 0; i < nPerProcess; i = i + sampleSelectThresold) {
+        processSamples[j] = receiveBuffer[i];
+        j++;
+    }
+
+    int* receiveBufferProcessSamples = (int*)malloc(numProcess * numProcess * sizeof(int));
+    MPI_Gather(processSamples, numProcess, MPI_INT, receiveBufferProcessSamples, numProcess, MPI_INT, 0, MPI_COMM_WORLD);
+
+    int* pivotsSelected = (int*)malloc((numProcess - 1) * sizeof(int));
+
+    //Sort the selected samples, which will help us establish a global order among the samples.
+    //From the sorted samples, we pick few speical elements. which act as a pivot. which are shared with all processors. MPI_Bcast is used to broadcast the pivots to all processors.
+
+    if (processId == MASTER) {
+        quickSort(receiveBufferProcessSamples, 0, (numProcess * numProcess) - 1);
+
+        int pivotSelectThresold = numProcess + (int)floor(numProcess / 2.0) - 1;
+        for (int i = pivotSelectThresold, j = 0; i < numProcess * numProcess; i = i + numProcess ) {
+            pivotsSelected[j] = receiveBufferProcessSamples[i];
+            j++;
+        }
+    }
+
+    MPI_Bcast(pivotsSelected, numProcess - 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+
+    // Each processor takes its ordered segment and divides it into subsegments based on the choicen pivot.
+
+    int numPivotSection = numProcess - 1;
+    int maxSegments = numPivotSection + 1;
+
+    int** segments;
+    segments = (int**)malloc(maxSegments * sizeof(int*));
+    for (int i = 0; i < maxSegments; i++) {
+        segments[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    multiPivotPartition(receiveBuffer, nPerProcess, pivotsSelected, numPivotSection, segments);
+
+
+    // Now, processors share their ordered segments globally with the corresponding processor based on the segment number. using MPI_Alltoall
+    int* partitionSizes = (int*)malloc((numProcess - 1) * sizeof(int));
+
+    for (int i = 0; i < maxSegments; ++i) {
+        int start = segments[i][0];
+        int end  = segments [i][1];
+
+        if (start != -1 && end != -1) {
+            partitionSizes[i] = end - start + 1;
+        } else {
+            partitionSizes[i] = 0;
+        }
+    }
+
+    int* sendDispIndex = (int*)malloc(numProcess * sizeof(int));
+    int* recvDispIndex = (int*)malloc(numProcess * sizeof(int));
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    int* newPartitionSizes = (int*)malloc((numProcess - 1) * sizeof(int));
+    MPI_Alltoall(partitionSizes, 1, MPI_INT, newPartitionSizes, 1, MPI_INT, MPI_COMM_WORLD);
+
+    int totalSize = 0;
+    for (int i = 0; i < numProcess; i ++) {
+        totalSize += newPartitionSizes[i];
     }
 
 
+    int* newPartitions = (int*)malloc(totalSize * sizeof(int));
+	//*newPartitions = (double*)malloc(totalSize * sizeof(double));
+
+	sendDispIndex[0] = 0;
+	recvDispIndex[0] = 0; //Calculate the displacement relative to recvbuf, this displacement stores the data received from the process
+	for (int i = 1; i < numProcess; i++) {
+		sendDispIndex[i] = partitionSizes[i - 1] + sendDispIndex[i - 1];
+		recvDispIndex[i] = newPartitionSizes[i - 1] + recvDispIndex[i - 1];
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	MPI_Alltoallv(receiveBuffer, partitionSizes, sendDispIndex, MPI_INT, newPartitions, newPartitionSizes, recvDispIndex, MPI_INT, MPI_COMM_WORLD);
 
 
+    merge_elements(newPartitions, newPartitionSizes, numProcess);
 
 
-    return 0;
+    int totalelements = 0;
+
+    for (int i = 0; i < numProcess; i++) {
+        totalelements = totalelements + newPartitionSizes[i];
+    }
+
+    int* subListSizes = (int*)malloc(numProcess * sizeof(int));
+	int* recvDisp2 = (int*)malloc(numProcess * sizeof(int));
+
+	MPI_Gather(&totalelements, 1, MPI_INT, subListSizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+
+    if (processId == 0) {
+        recvDisp2[0] = 0;
+        for (int i =  1; i < numProcess; i++) {
+			recvDisp2[i] = subListSizes[i - 1] + recvDisp2[i - 1];
+        }
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+	int* last_array_sorted = (int*)malloc(n * sizeof(int));
+	//Send each sorted sublist back to the root process
+	MPI_Gatherv(newPartitions, totalelements, MPI_INT, last_array_sorted, subListSizes, recvDisp2, MPI_INT, 0, MPI_COMM_WORLD);
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+    if (processId == 0) {
+
+		FILE* file = fopen("output.txt", "w");
+		if (file != NULL) {
+			for (int i = 0; i < n; i++) {
+				fprintf(file, "%d ", last_array_sorted[i]);
+			}
+			fclose(file);
+		}
+		else {
+			fprintf(stderr, "Error opening file.\n");
+		}
+    }
+		
+        
+    double elapsedTime = MPI_Wtime() - startTime;
+	if (processId == MASTER) {
+		printf("Total Elapsed time during the process : %f\n", elapsedTime);
+	}
+
+	MPI_Finalize();
+	return 0;
 
 
 }
