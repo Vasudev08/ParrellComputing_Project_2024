@@ -140,7 +140,7 @@ void multiPivotPartition(int arr[], int n, int pivots[], int numPivots, int** se
 
 
 int main(int agrc, char* argv[]) {
-    if (agrc != 2) {
+    if (agrc != 3) {
         std::cout << "Usage: Please enter input filename to perform sorting.\n";
         return 1;
     }
@@ -152,17 +152,8 @@ int main(int agrc, char* argv[]) {
         return 1;
     }
 
-    const int MAX_SIZE = 100; // You can adjust this size based on your input
-    int array[MAX_SIZE];
-
-    int count = elementCount(input);
-
-    print_array(array, count);
-
-    input.close();
-
     int n;
-    n = count;
+	sscanf(argv[2], "%d", &n);	// Total number of elements
 
     int numProcess, processId;
 
@@ -186,7 +177,8 @@ int main(int agrc, char* argv[]) {
     if (processId == MASTER) {
         sendBuffer = (int*)malloc(n * sizeof(int));
         int arraySize = read_file(input, sendBuffer);
-        cout << arraySize << endl;
+        cout << "Number of elements read: " << arraySize << endl; // Check read count
+
 
 
     }
