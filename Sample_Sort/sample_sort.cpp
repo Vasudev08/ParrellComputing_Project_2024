@@ -7,6 +7,7 @@
 #include <fstream>
 #include <mpi.h>
 #include <cmath> 
+#include <caliper/caliper.h>
 
 
 #define MASTER 0
@@ -24,7 +25,6 @@ int read_file(std::ifstream& lineInput, int* array) {
     }
 
     return i;
-
 }
 
 int elementCount(std::ifstream& lineInput) {
@@ -140,6 +140,8 @@ void multiPivotPartition(int arr[], int n, int pivots[], int numPivots, int** se
 
 
 int main(int agrc, char* argv[]) {
+    caliper::init();
+    CALIPER_MARK_REGION("main");
     if (agrc != 3) {
         std::cout << "Usage: Please enter input filename to perform sorting.\n";
         return 1;
@@ -174,6 +176,9 @@ int main(int agrc, char* argv[]) {
     int* receiveBuffer = (int*)malloc(nPerProcess * sizeof(int));
 
     int* sendBuffer = NULL;
+
+    CALIPER_MARK_REGION("data_init_io");
+
     if (processId == MASTER) {
         sendBuffer = (int*)malloc(n * sizeof(int));
         int arraySize = read_file(input, sendBuffer);
@@ -185,13 +190,19 @@ int main(int agrc, char* argv[]) {
 
     startTime = MPI_Wtime();
     MPI_Scatter(sendBuffer, nPerProcess, MPI_INT, receiveBuffer, nPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
+    CALIPER_END_REGION("data_init_io");
 
 
     //Run basic sorting algorithm on each of the segments, where each processor is handling its piece independently.
+    CALIPER_MARK_REGION("comp");
     quickSort(receiveBuffer, 0, nPerProcess-1);
+    CALIPER_END_REGION("comp");
+
 
 
     //From these sorted segments, each processor selects few samples. then, MPI communication is used to collect samples from all processors
+    CALIPER_MARK_REGION("comm");
+
     int sampleSelectThresold = n / (numProcess * numProcess); // elements to skip for selecting pivots
     int* processSamples = (int*)malloc(numProcess * sizeof(int));
     for (int i = 0, j = 0; i < nPerProcess; i = i + sampleSelectThresold) {
@@ -201,6 +212,8 @@ int main(int agrc, char* argv[]) {
 
     int* receiveBufferProcessSamples = (int*)malloc(numProcess * numProcess * sizeof(int));
     MPI_Gather(processSamples, numProcess, MPI_INT, receiveBufferProcessSamples, numProcess, MPI_INT, 0, MPI_COMM_WORLD);
+    CALIPER_END_REGION("comm");
+
 
     int* pivotsSelected = (int*)malloc((numProcess - 1) * sizeof(int));
 
@@ -208,6 +221,8 @@ int main(int agrc, char* argv[]) {
     //From the sorted samples, we pick few speical elements. which act as a pivot. which are shared with all processors. MPI_Bcast is used to broadcast the pivots to all processors.
 
     if (processId == MASTER) {
+        CALIPER_MARK_REGION("comp");
+
         quickSort(receiveBufferProcessSamples, 0, (numProcess * numProcess) - 1);
 
         int pivotSelectThresold = numProcess + (int)floor(numProcess / 2.0) - 1;
@@ -215,6 +230,8 @@ int main(int agrc, char* argv[]) {
             pivotsSelected[j] = receiveBufferProcessSamples[i];
             j++;
         }
+        CALIPER_END_REGION("comp");
+
     }
 
     MPI_Bcast(pivotsSelected, numProcess - 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -235,6 +252,7 @@ int main(int agrc, char* argv[]) {
 
 
     // Now, processors share their ordered segments globally with the corresponding processor based on the segment number. using MPI_Alltoall
+    CALIPER_MARK_REGION("comm");
     int* partitionSizes = (int*)malloc((numProcess - 1) * sizeof(int));
 
     for (int i = 0; i < maxSegments; ++i) {
@@ -273,11 +291,16 @@ int main(int agrc, char* argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	MPI_Alltoallv(receiveBuffer, partitionSizes, sendDispIndex, MPI_INT, newPartitions, newPartitionSizes, recvDispIndex, MPI_INT, MPI_COMM_WORLD);
+    CALIPER_END_REGION("comm");
 
 
+    CALIPER_MARK_REGION("comp")
+    
     merge_elements(newPartitions, newPartitionSizes, numProcess);
+    CALIPER_END_REGION("comp")
 
 
+    CALIPER_MARK_REGION("comm");
     int totalelements = 0;
 
     for (int i = 0; i < numProcess; i++) {
@@ -303,6 +326,8 @@ int main(int agrc, char* argv[]) {
 	MPI_Gatherv(newPartitions, totalelements, MPI_INT, last_array_sorted, subListSizes, recvDisp2, MPI_INT, 0, MPI_COMM_WORLD);
 
 	MPI_Barrier(MPI_COMM_WORLD);
+    CALIPER_END_REGION("comm");
+
 
     if (processId == 0) {
 
