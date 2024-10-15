@@ -26,6 +26,6 @@ clean:
 # Run the program with a given input file
 run: $(TARGET)
 	@echo "Running the program..."
-	@./$(TARGET) input_10.txt 20
+	@./$(TARGET) input_65536_Random.txt 65537
 
 .PHONY: all clean run
