@@ -1,26 +1,19 @@
+
 /******************************************************************************
 * FILE: bitonic_sort.cpp
 * DESCRIPTION:  
 *   MPI Bitonic Sort in C++
-*   In this code, the master task distributes a matrix multiply
-*   operation to numtasks-1 worker tasks.
+*   This code distributes the sorting operation across multiple processes.
 * AUTHOR: Anna Hartman
 * LAST REVISED: 10/09/24
-******************************************************************************/
-
-
-
-
-/******************************************************************************
-* PARALLEL
 ******************************************************************************/
 
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cstdlib> // For rand() and srand()
-#include <ctime>   // For time()
+#include <cstdlib> 
+#include <ctime>   
 #include <mpi.h>
 
 void bitonicMerge(std::vector<int>& arr, int low, int count, bool dir) {
@@ -72,7 +65,6 @@ void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs
 
     // Merge the sorted arrays in the root process
     if (rank == 0) {
-        // Perform a bitonic merge for the whole array
         std::cout << "Root process is merging the sorted arrays." << std::endl;
         bitonicSort(arr, 0, size, true); // Sort the gathered array
     }
@@ -85,14 +77,35 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    const int SIZE = 16; // Adjust size as necessary
+    // Ensure that two arguments (size of array and number of processes) are provided
+    if (argc < 3) {
+        if (rank == 0) {
+            std::cerr << "Usage: " << argv[0] << " <size of array> <number of processes>" << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    // Parse arguments
+    int size = std::atoi(argv[1]);
+    int requestedProcs = std::atoi(argv[2]);
+
+    if (numProcs != requestedProcs) {
+        if (rank == 0) {
+            std::cerr << "Error: The number of processes specified (" << requestedProcs 
+                      << ") does not match the number of processes started (" << numProcs << ")." << std::endl;
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
     std::vector<int> arr;
 
     if (rank == 0) {
         // Seed the random number generator and create a random array
         srand(static_cast<unsigned int>(time(nullptr))); 
-        arr.resize(SIZE);
-        for (int i = 0; i < SIZE; i++) {
+        arr.resize(size);
+        for (int i = 0; i < size; i++) {
             arr[i] = rand() % 100; // Random numbers between 0 and 99
         }
         std::cout << "Initial array: ";
@@ -101,7 +114,7 @@ int main(int argc, char** argv) {
     }
 
     // Perform the parallel bitonic sort
-    parallelBitonicSort(arr, SIZE, rank, numProcs);
+    parallelBitonicSort(arr, size, rank, numProcs);
 
     // Print the sorted array in the root process
     if (rank == 0) {
