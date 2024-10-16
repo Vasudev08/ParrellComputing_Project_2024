@@ -85,16 +85,29 @@ Parallel Merge Sort uses the divide and conquer technique, recursively dividing 
 #### 2b.4 Radix Sort
 Radix Sort is an algorithm that sorts by processing through individual digits, sorting along the way. The process can be sped up by allowing each processor to handle a portion of the total array. By sorting a subarray and keeping note of the order of subarray chunks being sorted in each processor, they can be placed accordingly back into the main array. While this example sorts via binary, the process can account for numbers of any base as long as the # of arrays corresponds correctly.
 
-1. Initialize MPI for multiprocessor communication
-2. Convert array digits into binary (helps with initial implementation).
-3. Find the maximum element and its # of digits.
-5. Begin iterating through digits starting at the least significant digit up to the maximum digit significance.
-7. Split the array into subarrays depending on the # of processors used and send to workers,
-   keeping track of the order in which each subarray gets sent where.
-9. Each worker will sort its subarray into 2 arrays, the first with digits that are 0, the second with digits that are 1.
-10. Worker returns arrays and master combines the 0 array in order of worker process, then repeats for the 1 array.
-11. Repeat with the next digit until all digits places have been parsed.
-12. End MPI once complete.
+   Pseudocode:
+   1. Initialize MPI for multiprocessor communication
+   2. Convert array digits into binary (helps with initial implementation).
+   3. Find the maximum element and its # of digits.
+   5. Begin iterating through digits starting at the least significant digit up to the maximum digit significance.
+   7. Split the array into subarrays depending on the # of processors used and send to workers,
+      keeping track of the order in which each subarray gets sent where.
+   9. Each worker will sort its subarray into 2 arrays, the first with digits that are 0, the second with digits that are 1.
+   10. Worker returns arrays and master combines the 0 array in order of worker process, then repeats for the 1 array.
+   11. Repeat with the next digit until all digits places have been parsed.
+   12. End MPI once complete.
+
+   Coded Algorithm (Differs from pseudocode as this version more optimally parallelizes Radix Sort):
+   1. Initializes MPI environment with MPI_Init(), MPI_Comm_size(), and MPI_Comm_rank().
+   2. Master process at rank 0 creates array based on command line arguments.
+   3. Total array size is broadcasted to all processes with MPI_Bcast().
+   4. Total array is split into subarrays based on # of processers and distributed amongst the processors with MPI_Scatter().
+   5. Each process finds the maximum value of its subarray in base 2 as well as the amount of digits it has.
+   6. Each process sorts its subarray by digit group in countSort(). A histogram counts the occurances of each digit group in the subarray. Using the histogram and summations, it sorts the local subarray and redistributes the info to the rest of the processes.
+   7. Arrays are gathered together, exchanging information and parts of subarrays to globally sort the total array.
+   8. Using MPI_Gatherv() All subarrays are collected in the master.
+   9. The total array is checked if it is sorted and prints the result.
+   10. Memory is deallocated and MPI_Finalize() ends the MPI environment.
    
 ### 2c. Evaluation plan - what and how will you measure and compare
 
