@@ -167,25 +167,86 @@ CALI_MARK_END("comp_large");
 CALI_MARK_END("comp");
 ```
 
-### **Calltree Example**:
+### **Algo Calltree**:
+
+#### Merge Sort Calltree
 ```
-# MPI Mergesort
-4.695 main
-├─ 0.001 MPI_Comm_dup
-├─ 0.000 MPI_Finalize
-├─ 0.000 MPI_Finalized
+0.504 main
 ├─ 0.000 MPI_Init
+├─ 0.003 MPI_Bcast
+├─ 0.000 comm
+│  ├─ 0.000 MPI_Scatter
+│  └─ 0.000 comm_large
+│     └─ 0.000 MPI_Gather
+├─ 0.000 comp
+│  └─ 0.000 comp_large
+├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Initialized
-├─ 2.599 comm
-│  ├─ 2.572 MPI_Barrier
-│  └─ 0.027 comm_large
-│     ├─ 0.011 MPI_Gather
-│     └─ 0.016 MPI_Scatter
-├─ 0.910 comp
-│  └─ 0.909 comp_large
-├─ 0.201 data_init_runtime
-└─ 0.440 correctness_check
+├─ 0.000 MPI_Finalized
+└─ 0.000 MPI_Comm_dup
 ```
+#### Sample Sort Calltree
+```
+0.271 main
+├─ 0.000 data_init_runtime
+├─ 0.267 MPI_Init
+│  └─ 0.000 MPI_Init
+├─ 0.003 comm
+│  ├─ 0.001 comm_scatter
+│  │  └─ 0.000 MPI_Scatter
+│  ├─ 0.000 comm_gather_samples
+│  │  └─ 0.000 MPI_Gather
+│  ├─ 0.001 comm_bcast_pivots
+│  │  └─ 0.001 MPI_Bcast
+│  ├─ 0.001 comm_all_to_all
+│  │  └─ 0.001 MPI_Alltoall
+│  ├─ 0.000 comm_alltoallv
+│  │  └─ 0.000 MPI_Alltoallv
+│  └─ 0.000 final_gather
+│     └─ 0.000 MPI_Gatherv
+├─ 0.000 comp
+│  ├─ 0.000 local_sort
+│  ├─ 0.000 pivot_sort
+│  ├─ 0.000 pivot_partition
+│  └─ 0.000 merge_elements
+├─ 0.000 MPI_Barrier
+├─ 0.000 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.001 MPI_Comm_dup
+
+```
+### Radix Sort Calltree
+```
+156.618 main
+├─ 0.000 MPI_Init
+├─ 21.247 data_init_runtime
+├─ 16.429 comm
+│  ├─ 15.940 comm_large
+│  │  └─ 15.940 MPI_Bcast
+│  └─ 0.489 comm_small
+│     ├─ 0.289 MPI_Scatter
+│     ├─ 0.000 MPI_Gather
+│     └─ 0.201 MPI_Gatherv
+├─ 133.551 comp
+│  ├─ 0.240 comp_small
+│  │  ├─ 0.014 MPI_Gather
+│  │  └─ 0.038 MPI_Bcast
+│  └─ 133.311 comp_large
+│     ├─ 6.155 MPI_Allgather
+│     └─ 3.876 MPI_Gatherv
+├─ 0.761 MPI_Barrier
+├─ 0.772 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.000 MPI_Comm_dup
+```
+
+
+
 
 ### 3b. Collect Metadata
 
@@ -211,6 +272,78 @@ adiak::value("implementation_source", implementation_source); // Where you got t
 They will show up in the `Thicket.metadata` if the caliper file is read into Thicket.
 
 ### **See the `Builds/` directory to find the correct Caliper configurations to get the performance metrics.** They will show up in the `Thicket.dataframe` when the Caliper file is read into Thicket.
+
+#### Merge Sort Metadata
+```
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance algorithm  \
+profile                                                                         
+3133824840              true                true               true     merge   
+
+           programming_model  group_num  input_size  num_procs data_type  \
+profile                                                                    
+3133824840               mpi         18         128          2    random   
+
+            size_of_data_type scalability  
+profile                                    
+3133824840                  4      strong
+```
+
+#### Sample Sort Metadata
+```
+   cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
+
+              algorithm programming_model  group_num  input_size  num_procs  \
+profile                                                                       
+3133824840  Sample Sort               mpi         18         128          2   
+
+           data_type  size_of_data_type scalability  
+profile                                              
+3133824840    random                  4      strong  
+
+```
+
 ## 4. Performance evaluation
 
 Include detailed analysis of computation performance, communication performance. 
