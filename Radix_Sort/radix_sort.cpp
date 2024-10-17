@@ -20,7 +20,7 @@ int np;
 int *createArray(int size, int initialValue) 
 {
     int *arr = (int *)malloc(sizeof(int) * size);
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         arr[i] = initialValue;
     }
@@ -34,7 +34,7 @@ int *getRandomArray(int size)
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 100000000.0);
     int *arr = (int *)malloc(sizeof(int) * size);
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         arr[i] = (int)dis(gen);
     }
@@ -45,9 +45,9 @@ int *getRandomArray(int size)
 int findMax(int *arr, int size)
 {
     int max = 0;
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
-        if (arr[i] > max)
+        if(arr[i] > max)
         {
             max = arr[i];
         }
@@ -75,7 +75,7 @@ int findMaxDigitCountFromNetwork(int *arr, int size, int rank)
     int localMDC = findMaxDigitCount(arr, size);
     int *localMDCs;
 
-    if (rank == 0)
+    if(rank == 0)
     {
         localMDCs = (int *)malloc(sizeof(int) * np);
     }
@@ -83,11 +83,11 @@ int findMaxDigitCountFromNetwork(int *arr, int size, int rank)
     MPI_Gather(&localMDC, 1, MPI_INT, localMDCs, 1, MPI_INT, 0, MPI_COMM_WORLD);
     
     int max = 0;
-    if (rank == 0)
+    if(rank == 0)
     {
-        for (int i = 0; i < np; i++)
+        for(int i = 0; i < np; i++)
         {
-            if (localMDCs[i] > max)
+            if(localMDCs[i] > max)
             {
                 max = localMDCs[i];
             }
@@ -103,7 +103,7 @@ int findMaxDigitCountFromNetwork(int *arr, int size, int rank)
 int power(int num, int pow)
 {
     int result = 1;
-    for (int i = 0; i < pow; i++)
+    for(int i = 0; i < pow; i++)
     {
         result *= num;
     }
@@ -114,7 +114,7 @@ int power(int num, int pow)
 int getDigitValue(int number, int digitSpan, int offset)
 {
     int divisor = power(BASE, digitSpan);
-    for (int i = 0; i < offset; i++)
+    for(int i = 0; i < offset; i++)
     {
         number /= divisor;
     }
@@ -134,27 +134,27 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
     int *preSum = createArray(iter, 0);
     int *preSumGroup = createArray(iter, 0);
 
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         digitValues[i] = getDigitValue(arr[i], digitSpan, offset);
         hist[digitValues[i]]++;
     }
 
-    for (int i = 1; i < iter; i++)
+    for(int i = 1; i < iter; i++)
     {
         preSum[i] = hist[i - 1] + preSum[i - 1];
     }
 
     int *relOffset = createArray(size, 0);
 
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         relOffset[i] = preSumGroup[digitValues[i]];
         preSumGroup[digitValues[i]]++;
     }
 
     int *temp = (int *)malloc(sizeof(int) * size);
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         temp[preSum[digitValues[i]] + relOffset[i]] = arr[i];
     }
@@ -162,13 +162,13 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
     int **distMap = (int **)malloc(sizeof(int *) * np);
     int *distIndex = (int *)malloc(sizeof(int) * np);
 
-    for (int i = 0; i < np; i++)
+    for(int i = 0; i < np; i++)
     {
         distMap[i] = (int *)malloc(sizeof(int) * hist[i]);
         distIndex[i] = 0;
     }
 
-    for (int i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         int dVal = getDigitValue(temp[i], digitSpan, offset);
         distMap[dVal][distIndex[dVal]++] = temp[i];
@@ -176,7 +176,7 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 
     int npNp = np * np;
     int *expHist = (int *)malloc(sizeof(int) * npNp);
-    for (int i = 0; i < npNp; i++)
+    for(int i = 0; i < npNp; i++)
     {
         expHist[i] = 0;
     }
@@ -184,7 +184,7 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
     MPI_Allgather(hist, np, MPI_INT, expHist, np, MPI_INT, MPI_COMM_WORLD);
 
     int *histIncoming = (int *)malloc(sizeof(int) * np);
-    for (int i = 0; i < np; i++)
+    for(int i = 0; i < np; i++)
     {
         histIncoming[i] = 0;
     }
@@ -193,13 +193,13 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 
     int numIncoming = 0;
 
-    for (int i = 0; i < np; i++)
+    for(int i = 0; i < np; i++)
     {
         int idx = (np * i) + rank;
         histIncoming[i] = expHist[idx];
         numIncoming += histIncoming[i];
         displacement[i] = 0;
-        if (i > 0)
+        if(i > 0)
         {
             displacement[i] = displacement[i - 1] + histIncoming[i - 1];
         }
@@ -207,11 +207,12 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 
     int *nextArr = (int *)malloc(sizeof(int) * numIncoming);
 
-    for (int i = 0; i < np; i++)
+    for(int i = 0; i < np; i++)
     {   
         MPI_Gatherv(distMap[i], hist[i], MPI_INT, nextArr, histIncoming, displacement, MPI_INT, i, MPI_COMM_WORLD);
     }
 
+    // Free memory
     free(digitValues);
     free(preSum);
     free(preSumGroup);
@@ -222,7 +223,7 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
     free(displacement);
     free(expHist);
 
-    for (int i = 0; i < np; i++)
+    for(int i = 0; i < np; i++)
     {
         free(distMap[i]);
     }
@@ -237,9 +238,9 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 // Check if array values are sorted in increasing order
 int checkSorted(int *arr, int size)
 {
-    for (int i = 1; i < size; i++)
+    for(int i = 1; i < size; i++)
     {
-        if (arr[i] < arr[i - 1])
+        if(arr[i] < arr[i - 1])
         {
             return FALSE;
         }
@@ -250,11 +251,11 @@ int checkSorted(int *arr, int size)
 // Get array size exponent and get true size with BASE
 int readArraySize(int argc, char **argv)
 {
-    for (int i = 0; i < argc; i++)
+    for(int i = 0; i < argc; i++)
     {
-        if (strcmp(argv[i], "--size") == 0)
+        if(strcmp(argv[i], "--size") == 0)
         {
-            return power(BASE, atoi(argv[i + 1]));
+            return atoi(argv[i + 1]);
         }
     }
     return 0;
@@ -288,7 +289,7 @@ int main(int argc, char **argv)
     cali::ConfigManager mgr;
     mgr.start();
 
-    if (rank == 0)
+    if(rank == 0)
     {
         startTS = MPI_Wtime();
         CALI_MARK_BEGIN(data_init_runtime);
@@ -302,9 +303,9 @@ int main(int argc, char **argv)
     int digitSpan = (int)log2(np);
     
     CALI_MARK_BEGIN(comm);
-    CALI_MARK_BEGIN(comm_small);
+    CALI_MARK_BEGIN(comm_large);
     MPI_Bcast(&arrSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END(comm_small);
+    CALI_MARK_END(comm_large);
     CALI_MARK_END(comm);
 
     int subSize = arrSize / np;
@@ -323,7 +324,7 @@ int main(int argc, char **argv)
     CALI_MARK_END(comp);
     int noExcessScanCount = maxDigitCount / digitSpan;
 
-    for (int i = 0; i < noExcessScanCount + 1; i++)
+    for(int i = 0; i < noExcessScanCount + 1; i++)
     {   
         CALI_MARK_BEGIN(comp);
         CALI_MARK_BEGIN(comp_large);
@@ -336,7 +337,7 @@ int main(int argc, char **argv)
 
     int *expectedIncoming, *displacements, *sortedArr;
 
-    if (rank == 0)
+    if(rank == 0)
     {
         expectedIncoming = (int *)malloc(sizeof(int) * np);
     }
@@ -346,24 +347,24 @@ int main(int argc, char **argv)
     CALI_MARK_END(comm_small);
     CALI_MARK_END(comm);
 
-    if (rank == 0)
+    if(rank == 0)
     {
         displacements = (int *)malloc(sizeof(int) * np);
         displacements[0] = 0;
         sortedArr = (int *)malloc(sizeof(int) * arrSize);
-        for (int i = 1; i < np; i++)
+        for(int i = 1; i < np; i++)
         {
             displacements[i] = displacements[i - 1] + expectedIncoming[i - 1];
         }
     }
 
     CALI_MARK_BEGIN(comm);
-    CALI_MARK_BEGIN(comm_large);
+    CALI_MARK_BEGIN(comm_small);
     MPI_Gatherv(subArr, subSize, MPI_INT, sortedArr, expectedIncoming, displacements, MPI_INT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END(comm_large);
+    CALI_MARK_END(comm_small);
     CALI_MARK_END(comm);
 
-    if (rank == 0)
+    if(rank == 0)
     {
         CALI_MARK_BEGIN(correctness_check);
         printf("[SORTED]: %s\n", checkSorted(sortedArr, arrSize) ? "TRUE" : "FALSE");
