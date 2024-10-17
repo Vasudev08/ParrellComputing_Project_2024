@@ -98,6 +98,7 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
    12. End MPI once complete.
 
    Coded Algorithm (Differs from pseudocode as this version more optimally parallelizes Radix Sort):
+   NOTE: Algorithm takes exponent for base 2 as array size input (EX: 28 for 2^28)
    1. Initializes MPI environment with MPI_Init(), MPI_Comm_size(), and MPI_Comm_rank().
    2. Master process at rank 0 creates array based on command line arguments.
    3. Total array size is broadcasted to all processes with MPI_Bcast().
