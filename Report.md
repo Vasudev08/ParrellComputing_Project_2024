@@ -221,29 +221,29 @@ CALI_MARK_END("comp");
 ```
 #### Radix Sort Calltree
 ```
-156.618 main
+0.396 main
 ├─ 0.000 MPI_Init
-├─ 21.247 data_init_runtime
-├─ 16.429 comm
-│  ├─ 15.940 comm_large
-│  │  └─ 15.940 MPI_Bcast
-│  └─ 0.489 comm_small
-│     ├─ 0.289 MPI_Scatter
+├─ 0.000 data_init_runtime
+├─ 0.004 comm
+│  ├─ 0.003 comm_large
+│  │  └─ 0.003 MPI_Bcast
+│  └─ 0.001 comm_small
+│     ├─ 0.000 MPI_Scatter
 │     ├─ 0.000 MPI_Gather
-│     └─ 0.201 MPI_Gatherv
-├─ 133.551 comp
-│  ├─ 0.240 comp_small
-│  │  ├─ 0.014 MPI_Gather
-│  │  └─ 0.038 MPI_Bcast
-│  └─ 133.311 comp_large
-│     ├─ 6.155 MPI_Allgather
-│     └─ 3.876 MPI_Gatherv
-├─ 0.761 MPI_Barrier
-├─ 0.772 correctness_check
+│     └─ 0.000 MPI_Gatherv
+├─ 0.003 comp
+│  ├─ 0.000 comp_small
+│  │  ├─ 0.000 MPI_Gather
+│  │  └─ 0.000 MPI_Bcast
+│  └─ 0.003 comp_large
+│     ├─ 0.001 MPI_Allgather
+│     └─ 0.001 MPI_Gatherv
+├─ 0.000 MPI_Barrier
+├─ 0.000 correctness_check
 ├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Initialized
 ├─ 0.000 MPI_Finalized
-└─ 0.000 MPI_Comm_dup
+└─ 0.002 MPI_Comm_dup
 ```
 
 
@@ -347,45 +347,45 @@ profile
 
 #### Radix Sort Metadata
 ```
-          cali.caliper.version  mpi.world.size  \
-profile                                          
-222957958               2.11.0               4   
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
 
-                                                spot.metrics  \
-profile                                                        
-222957958  min#inclusive#sum#time.duration,max#inclusive#...   
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
 
-          spot.timeseries.metrics  spot.format.version  \
-profile                                                  
-222957958                                            2   
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
 
-                                                spot.options  spot.channels  \
-profile                                                                       
-222957958  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
 
-          cali.channel spot:node.order  spot:output spot:profile.mpi  \
-profile                                                                
-222957958         spot            true  p4-a28.cali             true   
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
 
-          spot:region.count spot:time.exclusive spot:time.variance  \
-profile                                                              
-222957958              true                true               true   
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
 
-           launchdate                                          libraries  \
-profile                                                                    
-222957958  1729135717  [/scratch/group/csce435-f24/Caliper/caliper/li...   
-
-                              cmdline cluster algorithm programming_model  \
+            launchdate                                          libraries  \
 profile                                                                     
-222957958  [./radix_sort, --size, 28]       c     radix               mpi   
+3133824840  1729137630  [/scratch/group/csce435-f24/Caliper/caliper/li...   
 
-          data_type  size_of_data_type  input_size input_type  num_procs  \
-profile                                                                    
-222957958       int                  4   268435456     Random          4   
+                                cmdline cluster algorithm programming_model  \
+profile                                                                       
+3133824840  [./radix_sort, --size, 128]       c     radix               mpi   
 
-          scalability  group_num implementation_source  
-profile                                                 
-222957958      strong         18                online
+           data_type  size_of_data_type  input_size input_type  num_procs  \
+profile                                                                     
+3133824840       int                  4         128     Random          2   
+
+           scalability  group_num implementation_source  
+profile                                                  
+3133824840      strong         18                online  
 ```
 
 ## 4. Performance evaluation
