@@ -344,6 +344,49 @@ profile
 
 ```
 
+#### Radix Sort Metadata
+```
+          cali.caliper.version  mpi.world.size  \
+profile                                          
+222957958               2.11.0               4   
+
+                                                spot.metrics  \
+profile                                                        
+222957958  min#inclusive#sum#time.duration,max#inclusive#...   
+
+          spot.timeseries.metrics  spot.format.version  \
+profile                                                  
+222957958                                            2   
+
+                                                spot.options  spot.channels  \
+profile                                                                       
+222957958  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+          cali.channel spot:node.order  spot:output spot:profile.mpi  \
+profile                                                                
+222957958         spot            true  p4-a28.cali             true   
+
+          spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                              
+222957958              true                true               true   
+
+           launchdate                                          libraries  \
+profile                                                                    
+222957958  1729135717  [/scratch/group/csce435-f24/Caliper/caliper/li...   
+
+                              cmdline cluster algorithm programming_model  \
+profile                                                                     
+222957958  [./radix_sort, --size, 28]       c     radix               mpi   
+
+          data_type  size_of_data_type  input_size input_type  num_procs  \
+profile                                                                    
+222957958       int                  4   268435456     Random          4   
+
+          scalability  group_num implementation_source  
+profile                                                 
+222957958      strong         18                online
+```
+
 ## 4. Performance evaluation
 
 Include detailed analysis of computation performance, communication performance. 
