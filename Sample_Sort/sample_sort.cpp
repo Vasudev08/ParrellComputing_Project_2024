@@ -1,14 +1,20 @@
 /*
-- Finally, each processor merges and sorts the recieved elements.
-
+- . build.sh
+- make
+- sbatch mpi.grace_job 128 2
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 
 #include <iostream>
 #include <fstream>
 #include <mpi.h>
 #include <cmath> 
-#include <caliper/caliper.h>
-
+#include <caliper/cali.h>
+#include <caliper/cali-manager.h>
+#include <adiak.hpp>
 
 #define MASTER 0
 
@@ -16,7 +22,6 @@
 
 using namespace std;
 
-#define MASTER 0
 
 int read_file(std::ifstream& lineInput, int* array) {
     int i = 0;
@@ -140,22 +145,39 @@ void multiPivotPartition(int arr[], int n, int pivots[], int numPivots, int** se
 
 
 int main(int agrc, char* argv[]) {
-    caliper::init();
-    CALIPER_MARK_REGION("main");
-    if (agrc != 3) {
-        std::cout << "Usage: Please enter input filename to perform sorting.\n";
-        return 1;
+    CALI_CXX_MARK_FUNCTION;
+    
+    //if (agrc != 3) {
+      //  std::cout << "Usage: Please enter input filename to perform sorting.\n";
+        //return 1;
+    //}
+    CALI_MARK_BEGIN("data_init_runtime");
+    long n = atol(argv[1]);
+    int* original_array = (int*)malloc(n * sizeof(int));
+    
+    int c;
+    srand(time(NULL));
+    
+    for (c = 0; c < n; c++) {
+        original_array[c] = rand() % n;
+        
     }
+    CALI_MARK_END("data_init_runtime");
+    
 
-    std::ifstream input(argv[1]);
+    // Read the input filename from the first argument
+    //std::string filename = "input_65536_Random.txt";
 
-    if (!input) {
-        std::cout << "Cannot open input file.\n";
-        return 1;
-    }
+    // Read the array size from the second argument
+    //int n = 65536;  // Array size
 
-    int n;
-	sscanf(argv[2], "%d", &n);	// Total number of elements
+    // Open the input file
+    //std::ifstream input(filename);
+    
+    //if (!input) {
+    //    std::cerr << "Error: Could not open file " << filename << "\n";
+    //    return 1;
+    //}
 
     int numProcess, processId;
 
@@ -168,6 +190,12 @@ int main(int agrc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &processId); 
     printf("MPI process %d has started...\n", processId);
 
+    // Initialize Adiak for metadata collection
+    adiak::init(NULL);
+    adiak::value("algorithm", "Sample Sort");
+    adiak::value("programming_model", "mpi");
+    adiak::value("group_num", 18);
+
     // the amount of intergers send to each processor
     int nPerProcess = n / numProcess;
 
@@ -175,34 +203,30 @@ int main(int agrc, char* argv[]) {
     //Allocating memory for the receive buffer
     int* receiveBuffer = (int*)malloc(nPerProcess * sizeof(int));
 
-    int* sendBuffer = NULL;
+    int* sendBuffer = original_array;
 
-    CALIPER_MARK_REGION("data_init_io");
-
-    if (processId == MASTER) {
-        sendBuffer = (int*)malloc(n * sizeof(int));
-        int arraySize = read_file(input, sendBuffer);
-        cout << "Number of elements read: " << arraySize << endl; // Check read count
+    //if (processId == MASTER) {
+      //  sendBuffer = (int*)malloc(n * sizeof(int));
+        //int arraySize = read_file(input, sendBuffer);
+        //cout << "Number of elements read: " << arraySize << endl; // Check read count
 
 
 
-    }
+    //}
 
     startTime = MPI_Wtime();
+    CALI_MARK_BEGIN("comm_scatter");
     MPI_Scatter(sendBuffer, nPerProcess, MPI_INT, receiveBuffer, nPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
-    CALIPER_END_REGION("data_init_io");
+    CALI_MARK_END("comm_scatter");
 
 
     //Run basic sorting algorithm on each of the segments, where each processor is handling its piece independently.
-    CALIPER_MARK_REGION("comp");
+    CALI_MARK_BEGIN("local_sort");
     quickSort(receiveBuffer, 0, nPerProcess-1);
-    CALIPER_END_REGION("comp");
-
+    CALI_MARK_END("local_sort");
 
 
     //From these sorted segments, each processor selects few samples. then, MPI communication is used to collect samples from all processors
-    CALIPER_MARK_REGION("comm");
-
     int sampleSelectThresold = n / (numProcess * numProcess); // elements to skip for selecting pivots
     int* processSamples = (int*)malloc(numProcess * sizeof(int));
     for (int i = 0, j = 0; i < nPerProcess; i = i + sampleSelectThresold) {
@@ -211,8 +235,11 @@ int main(int agrc, char* argv[]) {
     }
 
     int* receiveBufferProcessSamples = (int*)malloc(numProcess * numProcess * sizeof(int));
+    
+    CALI_MARK_BEGIN("comm_gather_samples");
+    
     MPI_Gather(processSamples, numProcess, MPI_INT, receiveBufferProcessSamples, numProcess, MPI_INT, 0, MPI_COMM_WORLD);
-    CALIPER_END_REGION("comm");
+    CALI_MARK_END("comm_gather_samples");
 
 
     int* pivotsSelected = (int*)malloc((numProcess - 1) * sizeof(int));
@@ -221,7 +248,7 @@ int main(int agrc, char* argv[]) {
     //From the sorted samples, we pick few speical elements. which act as a pivot. which are shared with all processors. MPI_Bcast is used to broadcast the pivots to all processors.
 
     if (processId == MASTER) {
-        CALIPER_MARK_REGION("comp");
+        CALI_MARK_BEGIN("pivot_sort");
 
         quickSort(receiveBufferProcessSamples, 0, (numProcess * numProcess) - 1);
 
@@ -230,11 +257,13 @@ int main(int agrc, char* argv[]) {
             pivotsSelected[j] = receiveBufferProcessSamples[i];
             j++;
         }
-        CALIPER_END_REGION("comp");
-
+        CALI_MARK_END("pivot_sort");
     }
 
+    CALI_MARK_BEGIN("comm_bcast_pivots");
     MPI_Bcast(pivotsSelected, numProcess - 1, MPI_INT, 0, MPI_COMM_WORLD);
+    CALI_MARK_END("comm_bcast_pivots");
+
 
 
     // Each processor takes its ordered segment and divides it into subsegments based on the choicen pivot.
@@ -252,7 +281,6 @@ int main(int agrc, char* argv[]) {
 
 
     // Now, processors share their ordered segments globally with the corresponding processor based on the segment number. using MPI_Alltoall
-    CALIPER_MARK_REGION("comm");
     int* partitionSizes = (int*)malloc((numProcess - 1) * sizeof(int));
 
     for (int i = 0; i < maxSegments; ++i) {
@@ -290,17 +318,16 @@ int main(int agrc, char* argv[]) {
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 
+    CALI_MARK_BEGIN("comm_alltoallv");
 	MPI_Alltoallv(receiveBuffer, partitionSizes, sendDispIndex, MPI_INT, newPartitions, newPartitionSizes, recvDispIndex, MPI_INT, MPI_COMM_WORLD);
-    CALIPER_END_REGION("comm");
+    CALI_MARK_END("comm_alltoallv");
 
 
-    CALIPER_MARK_REGION("comp")
-    
+    CALI_MARK_BEGIN("merge_elements");
     merge_elements(newPartitions, newPartitionSizes, numProcess);
-    CALIPER_END_REGION("comp")
+    CALI_MARK_END("merge_elements");
 
 
-    CALIPER_MARK_REGION("comm");
     int totalelements = 0;
 
     for (int i = 0; i < numProcess; i++) {
@@ -312,7 +339,6 @@ int main(int agrc, char* argv[]) {
 
 	MPI_Gather(&totalelements, 1, MPI_INT, subListSizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-
     if (processId == 0) {
         recvDisp2[0] = 0;
         for (int i =  1; i < numProcess; i++) {
@@ -323,25 +349,37 @@ int main(int agrc, char* argv[]) {
     MPI_Barrier(MPI_COMM_WORLD);
 	int* last_array_sorted = (int*)malloc(n * sizeof(int));
 	//Send each sorted sublist back to the root process
+    CALI_MARK_BEGIN("final_gather");
 	MPI_Gatherv(newPartitions, totalelements, MPI_INT, last_array_sorted, subListSizes, recvDisp2, MPI_INT, 0, MPI_COMM_WORLD);
+    CALI_MARK_END("final_gather");
 
 	MPI_Barrier(MPI_COMM_WORLD);
-    CALIPER_END_REGION("comm");
+
+    CALI_MARK_BEGIN("correctness_check");
 
 
     if (processId == 0) {
 
-		FILE* file = fopen("output.txt", "w");
-		if (file != NULL) {
-			for (int i = 0; i < n; i++) {
-				fprintf(file, "%d ", last_array_sorted[i]);
-			}
-			fclose(file);
-		}
-		else {
-			fprintf(stderr, "Error opening file.\n");
-		}
+		int isSorted = 1;
+        for (int i = 0; i < n - 1; i++) {
+            std::cout << last_array_sorted[i] << std::endl;
+
+            if (last_array_sorted[i] > last_array_sorted[i + 1]) {
+                std::cout << last_array_sorted[i] << std::endl;
+                isSorted = 0;
+                break;
+            }
+        }
+
+        if (isSorted) {
+            std::cout << "The array is sorted." << std::endl;
+        } else {
+            std::cout << "The array is NOT sorted" << std::endl;
+        }
     }
+
+    CALI_MARK_END("correctness_check");
+
 		
         
     double elapsedTime = MPI_Wtime() - startTime;
