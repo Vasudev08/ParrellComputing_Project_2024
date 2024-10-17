@@ -167,25 +167,7 @@ CALI_MARK_END("comp_large");
 CALI_MARK_END("comp");
 ```
 
-### **Calltree Example**:
-```
-# MPI Mergesort
-4.695 main
-├─ 0.001 MPI_Comm_dup
-├─ 0.000 MPI_Finalize
-├─ 0.000 MPI_Finalized
-├─ 0.000 MPI_Init
-├─ 0.000 MPI_Initialized
-├─ 2.599 comm
-│  ├─ 2.572 MPI_Barrier
-│  └─ 0.027 comm_large
-│     ├─ 0.011 MPI_Gather
-│     └─ 0.016 MPI_Scatter
-├─ 0.910 comp
-│  └─ 0.909 comp_large
-├─ 0.201 data_init_runtime
-└─ 0.440 correctness_check
-```
+### **Algo Calltree**:
 
 #Merge Sort Calltree
 ```
@@ -203,6 +185,42 @@ CALI_MARK_END("comp");
 ├─ 0.000 MPI_Finalized
 └─ 0.000 MPI_Comm_dup
 ```
+#Sample Sort Calltree
+```
+0.271 main
+├─ 0.000 data_init_runtime
+├─ 0.267 MPI_Init
+│  └─ 0.000 MPI_Init
+├─ 0.003 comm
+│  ├─ 0.001 comm_scatter
+│  │  └─ 0.000 MPI_Scatter
+│  ├─ 0.000 comm_gather_samples
+│  │  └─ 0.000 MPI_Gather
+│  ├─ 0.001 comm_bcast_pivots
+│  │  └─ 0.001 MPI_Bcast
+│  ├─ 0.001 comm_all_to_all
+│  │  └─ 0.001 MPI_Alltoall
+│  ├─ 0.000 comm_alltoallv
+│  │  └─ 0.000 MPI_Alltoallv
+│  └─ 0.000 final_gather
+│     └─ 0.000 MPI_Gatherv
+├─ 0.000 comp
+│  ├─ 0.000 local_sort
+│  ├─ 0.000 pivot_sort
+│  ├─ 0.000 pivot_partition
+│  └─ 0.000 merge_elements
+├─ 0.000 MPI_Barrier
+├─ 0.000 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.001 MPI_Comm_dup
+
+```
+
+
+
 
 ### 3b. Collect Metadata
 
