@@ -5,7 +5,6 @@
 #include "mpi.h"
 #include <random>
 #include <sstream>
-
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
 #include <adiak.hpp>
@@ -110,7 +109,7 @@ int power(int num, int pow)
     return result;
 }
 
-// Get digit value
+// Get digit value based on num, the given digit span, and the offset (if any)
 int getDigitValue(int number, int digitSpan, int offset)
 {
     int divisor = power(BASE, digitSpan);
@@ -122,7 +121,9 @@ int getDigitValue(int number, int digitSpan, int offset)
     return res;
 }
 
-// Counting sort on subarray
+// Counting sort on subarray, communicates histogram and subarray data with MPI
+// Worker function used to iterate through subarray with digit spans and offsets to sort it
+// Communication with other processors allows the total array to sort when combined with histogram data and subarrays.
 int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 {
     int rank;
@@ -142,11 +143,10 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 
     for(int i = 1; i < iter; i++)
     {
-        preSum[i] = hist[i - 1] + preSum[i - 1];
+        preSum[i] = hist[i-1] + preSum[i-1];
     }
 
     int *relOffset = createArray(size, 0);
-
     for(int i = 0; i < size; i++)
     {
         relOffset[i] = preSumGroup[digitValues[i]];
@@ -161,7 +161,6 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
 
     int **distMap = (int **)malloc(sizeof(int *) * np);
     int *distIndex = (int *)malloc(sizeof(int) * np);
-
     for(int i = 0; i < np; i++)
     {
         distMap[i] = (int *)malloc(sizeof(int) * hist[i]);
@@ -190,9 +189,7 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
     }
 
     int *displacement = (int *)malloc(sizeof(int) * np);
-
     int numIncoming = 0;
-
     for(int i = 0; i < np; i++)
     {
         int idx = (np * i) + rank;
@@ -201,12 +198,11 @@ int *countSort(int *arr, int size, int digitSpan, int offset, int *returnSize)
         displacement[i] = 0;
         if(i > 0)
         {
-            displacement[i] = displacement[i - 1] + histIncoming[i - 1];
+            displacement[i] = displacement[i-1] + histIncoming[i-1];
         }
     }
 
     int *nextArr = (int *)malloc(sizeof(int) * numIncoming);
-
     for(int i = 0; i < np; i++)
     {   
         MPI_Gatherv(distMap[i], hist[i], MPI_INT, nextArr, histIncoming, displacement, MPI_INT, i, MPI_COMM_WORLD);
@@ -240,7 +236,7 @@ int checkSorted(int *arr, int size)
 {
     for(int i = 1; i < size; i++)
     {
-        if(arr[i] < arr[i - 1])
+        if(arr[i] < arr[i-1])
         {
             return FALSE;
         }
@@ -289,6 +285,7 @@ int main(int argc, char **argv)
     cali::ConfigManager mgr;
     mgr.start();
 
+    // Create random array and check if sorted (should not be)
     if(rank == 0)
     {
         startTS = MPI_Wtime();
@@ -354,7 +351,7 @@ int main(int argc, char **argv)
         sortedArr = (int *)malloc(sizeof(int) * arrSize);
         for(int i = 1; i < np; i++)
         {
-            displacements[i] = displacements[i - 1] + expectedIncoming[i - 1];
+            displacements[i] = displacements[i-1] + expectedIncoming[i-1];
         }
     }
 
@@ -364,6 +361,7 @@ int main(int argc, char **argv)
     CALI_MARK_END(comm_small);
     CALI_MARK_END(comm);
 
+    // Check if final array is sorted
     if(rank == 0)
     {
         CALI_MARK_BEGIN(correctness_check);
@@ -371,7 +369,7 @@ int main(int argc, char **argv)
         CALI_MARK_END(correctness_check);
 
         free(sortedArr);
-        printf("Elapsed time = %f seconds\n", MPI_Wtime() - startTS);
+        printf("Elapsed time = %f seconds\n", MPI_Wtime()-startTS);
     }
 
     adiak::init(NULL);
