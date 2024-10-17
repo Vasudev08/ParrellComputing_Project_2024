@@ -126,7 +126,8 @@ int main(int argc, char* argv[]) {
 
         int is_sorted = 1;
         for (int i = 1; i < n - 1; i++) {
-            if (data[i] > data[i - 1]) {
+            if (data[i] > data[i + 1]) {
+                std::cout << data[i] << std::endl;
                 is_sorted = 0;
                 break;
             }
