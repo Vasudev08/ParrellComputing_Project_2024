@@ -169,7 +169,7 @@ CALI_MARK_END("comp");
 
 ### **Algo Calltree**:
 
-#Merge Sort Calltree
+#### Merge Sort Calltree
 ```
 0.504 main
 ├─ 0.000 MPI_Init
@@ -185,7 +185,7 @@ CALI_MARK_END("comp");
 ├─ 0.000 MPI_Finalized
 └─ 0.000 MPI_Comm_dup
 ```
-#Sample Sort Calltree
+#### Sample Sort Calltree
 ```
 0.271 main
 ├─ 0.000 data_init_runtime
@@ -247,7 +247,7 @@ They will show up in the `Thicket.metadata` if the caliper file is read into Thi
 
 ### **See the `Builds/` directory to find the correct Caliper configurations to get the performance metrics.** They will show up in the `Thicket.dataframe` when the Caliper file is read into Thicket.
 
-#Merge Sort Metadata
+#### Merge Sort Metadata
 ```
            cali.caliper.version  mpi.world.size  \
 profile                                           
@@ -280,6 +280,42 @@ profile
             size_of_data_type scalability  
 profile                                    
 3133824840                  4      strong
+```
+
+#### Sample Sort Metadata
+```
+   cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
+
+              algorithm programming_model  group_num  input_size  num_procs  \
+profile                                                                       
+3133824840  Sample Sort               mpi         18         128          2   
+
+           data_type  size_of_data_type scalability  
+profile                                              
+3133824840    random                  4      strong  
+
 ```
 
 ## 4. Performance evaluation
