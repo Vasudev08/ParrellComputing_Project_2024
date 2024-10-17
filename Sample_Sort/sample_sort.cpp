@@ -427,6 +427,17 @@ int main(int agrc, char* argv[]) {
 		printf("Total Elapsed time during the process : %f\n", elapsedTime);
 	}
 
+    // Collect metadata for the experiment
+    adiak::value("input_size", n);
+    adiak::value("num_procs", numProcess);
+    adiak::value("data_type", "random");
+    adiak::value("size_of_data_type", sizeof(int));
+    adiak::value("scalability", "strong");
+
+    // MPI
+    //adiak::finalize();
+
+
 	MPI_Finalize();
 	return 0;
 
