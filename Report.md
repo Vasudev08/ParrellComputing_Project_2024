@@ -160,6 +160,23 @@ CALI_MARK_END("comp");
 └─ 0.440 correctness_check
 ```
 
+#Merge Sort Calltree
+```
+0.504 main
+├─ 0.000 MPI_Init
+├─ 0.003 MPI_Bcast
+├─ 0.000 comm
+│  ├─ 0.000 MPI_Scatter
+│  └─ 0.000 comm_large
+│     └─ 0.000 MPI_Gather
+├─ 0.000 comp
+│  └─ 0.000 comp_large
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.000 MPI_Comm_dup
+```
+
 ### 3b. Collect Metadata
 
 Have the following code in your programs to collect metadata:
@@ -188,6 +205,41 @@ They will show up in the `Thicket.metadata` if the caliper file is read into Thi
 
 Include detailed analysis of computation performance, communication performance. 
 Include figures and explanation of your analysis.
+
+#Merge Sort Metadata
+```
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance algorithm  \
+profile                                                                         
+3133824840              true                true               true     merge   
+
+           programming_model  group_num  input_size  num_procs data_type  \
+profile                                                                    
+3133824840               mpi         18         128          2    random   
+
+            size_of_data_type scalability  
+profile                                    
+3133824840                  4      strong
+```
 
 ### 4a. Vary the following parameters
 For input_size's:
