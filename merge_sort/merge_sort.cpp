@@ -110,35 +110,21 @@ int main(int argc, char* argv[]) {
 
     // Master process merges the sorted sub-arrays
     if (rank == 0) {
+        CALI_MARK_BEGIN("comp");        
         CALI_MARK_BEGIN("comp_large");
         for (int i = 1; i < size; ++i) {
-            int mid = i * local_n - 1;  // mid-point for current segment
-            int right = (i + 1) * local_n - 1;  // right end for current segment
+            int mid = i * local_n - 1;
+            int right = (i + 1) * local_n - 1;
             merge(data, 0, mid, right);
         }
         CALI_MARK_END("comp_large");
+        CALI_MARK_END("comp");
 
-        // Print the first 10 elements of the sorted array
         std::cout << "Sorted array (first 10 elements): ";
         for (int i = 0; i < 10; ++i) {
             std::cout << data[i] << " ";
         }
         std::cout << std::endl;
-
-        // Check if the entire array is sorted
-        bool is_sorted = true;
-        for (int i = 1; i < n; ++i) {
-            if (data[i] < data[i - 1]) {
-                is_sorted = false;
-                break;
-            }
-        }
-
-        if (is_sorted) {
-            std::cout << "Array is sorted" << std::endl;
-        } else {
-            std::cout << "Array is not sorted" << std::endl;
-        }
     }
 
     // Collect metadata for the experiment
@@ -148,7 +134,8 @@ int main(int argc, char* argv[]) {
     adiak::value("size_of_data_type", sizeof(int));
     adiak::value("scalability", "strong");
 
-    // Finalize MPI
+    // MPI
+    //adiak::finalize();
     MPI_Finalize();
 
     return 0;
