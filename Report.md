@@ -245,6 +245,26 @@ CALI_MARK_END("comp");
 └─ 0.002 MPI_Comm_dup
 ```
 
+#### Bitonic Sort Calltree
+
+```
+4.972 main
+├─ 0.000 MPI_Init
+└─ 2.803 comp
+   └─ 2.803 comp_large
+├─ 2.169 comm
+│  └─ 2.169 comm_large
+│     ├─ 2.163 MPI_Scatter 
+│     └─ 0.007 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Init
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Finalized
+├─ 0.000 MPI_Initialized
+└─ 24.052 MPI_Comm_dup
+```
+
+
 
 
 
