@@ -407,6 +407,40 @@ profile
 3133824840      strong         18                online  
 ```
 
+#### Bitonic Sort Metadata
+```
+cali.caliper.version  mpi.world.size  \
+profile                                           
+1981606483               2.11.0              16   
+
+                                                 spot.metrics  \
+profile                                                         
+1981606483  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+1981606483                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+1981606483  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+1981606483         spot            true  p16-a16.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+1981606483              true                true               true   
+
+            launchdate                                          libraries  \
+...
+
+           scalability  group_num implementation_source  
+profile
+1981606483      weak          1           online  
+```                                        
+
 ## 4. Performance evaluation
 
 Include detailed analysis of computation performance, communication performance. 
