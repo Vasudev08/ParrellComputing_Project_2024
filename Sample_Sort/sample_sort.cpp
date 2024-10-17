@@ -184,11 +184,14 @@ int main(int agrc, char* argv[]) {
     double startTime;
 
     //Splitting the given dataset into equally divided smaller segments, where each segement is given to a processor
-    
+    CALI_MARK_BEGIN("MPI_Init");
+
     MPI_Init(&agrc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcess);
     MPI_Comm_rank(MPI_COMM_WORLD, &processId); 
     printf("MPI process %d has started...\n", processId);
+    CALI_MARK_END("MPI_Init");
+
 
     // Initialize Adiak for metadata collection
     adiak::init(NULL);
@@ -215,15 +218,22 @@ int main(int agrc, char* argv[]) {
     //}
 
     startTime = MPI_Wtime();
+    CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_scatter");
     MPI_Scatter(sendBuffer, nPerProcess, MPI_INT, receiveBuffer, nPerProcess, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("comm_scatter");
+    CALI_MARK_END("comm");
+
 
 
     //Run basic sorting algorithm on each of the segments, where each processor is handling its piece independently.
+    CALI_MARK_BEGIN("comp");
+
     CALI_MARK_BEGIN("local_sort");
     quickSort(receiveBuffer, 0, nPerProcess-1);
     CALI_MARK_END("local_sort");
+    CALI_MARK_END("comp");
+
 
 
     //From these sorted segments, each processor selects few samples. then, MPI communication is used to collect samples from all processors
@@ -235,11 +245,12 @@ int main(int agrc, char* argv[]) {
     }
 
     int* receiveBufferProcessSamples = (int*)malloc(numProcess * numProcess * sizeof(int));
-    
+    CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_gather_samples");
-    
     MPI_Gather(processSamples, numProcess, MPI_INT, receiveBufferProcessSamples, numProcess, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("comm_gather_samples");
+    CALI_MARK_END("comm");
+
 
 
     int* pivotsSelected = (int*)malloc((numProcess - 1) * sizeof(int));
@@ -248,6 +259,8 @@ int main(int agrc, char* argv[]) {
     //From the sorted samples, we pick few speical elements. which act as a pivot. which are shared with all processors. MPI_Bcast is used to broadcast the pivots to all processors.
 
     if (processId == MASTER) {
+        CALI_MARK_BEGIN("comp");
+
         CALI_MARK_BEGIN("pivot_sort");
 
         quickSort(receiveBufferProcessSamples, 0, (numProcess * numProcess) - 1);
@@ -258,11 +271,15 @@ int main(int agrc, char* argv[]) {
             j++;
         }
         CALI_MARK_END("pivot_sort");
-    }
+        CALI_MARK_END("comp");
 
+    }
+    CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_bcast_pivots");
     MPI_Bcast(pivotsSelected, numProcess - 1, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("comm_bcast_pivots");
+    CALI_MARK_END("comm");
+
 
 
 
@@ -277,7 +294,12 @@ int main(int agrc, char* argv[]) {
         segments[i] = (int*)malloc(2 * sizeof(int));
     }
 
+    CALI_MARK_BEGIN("comp");
+    CALI_MARK_BEGIN("pivot_partition");
     multiPivotPartition(receiveBuffer, nPerProcess, pivotsSelected, numPivotSection, segments);
+    CALI_MARK_END("pivot_partition");
+    CALI_MARK_END("comp");
+
 
 
     // Now, processors share their ordered segments globally with the corresponding processor based on the segment number. using MPI_Alltoall
@@ -299,7 +321,15 @@ int main(int agrc, char* argv[]) {
     MPI_Barrier(MPI_COMM_WORLD);
 
     int* newPartitionSizes = (int*)malloc((numProcess - 1) * sizeof(int));
+    
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("comm_all_to_all");
     MPI_Alltoall(partitionSizes, 1, MPI_INT, newPartitionSizes, 1, MPI_INT, MPI_COMM_WORLD);
+    CALI_MARK_END("comm_all_to_all");
+    CALI_MARK_END("comm");
+
+
+
 
     int totalSize = 0;
     for (int i = 0; i < numProcess; i ++) {
@@ -318,14 +348,20 @@ int main(int agrc, char* argv[]) {
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 
+    CALI_MARK_BEGIN("comm");
+
     CALI_MARK_BEGIN("comm_alltoallv");
 	MPI_Alltoallv(receiveBuffer, partitionSizes, sendDispIndex, MPI_INT, newPartitions, newPartitionSizes, recvDispIndex, MPI_INT, MPI_COMM_WORLD);
     CALI_MARK_END("comm_alltoallv");
+    CALI_MARK_END("comm");
 
 
+    CALI_MARK_BEGIN("comp");
     CALI_MARK_BEGIN("merge_elements");
     merge_elements(newPartitions, newPartitionSizes, numProcess);
     CALI_MARK_END("merge_elements");
+    CALI_MARK_END("comp");
+
 
 
     int totalelements = 0;
@@ -349,9 +385,13 @@ int main(int agrc, char* argv[]) {
     MPI_Barrier(MPI_COMM_WORLD);
 	int* last_array_sorted = (int*)malloc(n * sizeof(int));
 	//Send each sorted sublist back to the root process
+    CALI_MARK_BEGIN("comm");
+
     CALI_MARK_BEGIN("final_gather");
 	MPI_Gatherv(newPartitions, totalelements, MPI_INT, last_array_sorted, subListSizes, recvDisp2, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("final_gather");
+    CALI_MARK_END("comm");
+
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
