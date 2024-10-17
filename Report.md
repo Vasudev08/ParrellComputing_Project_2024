@@ -218,6 +218,32 @@ CALI_MARK_END("comp");
 └─ 0.001 MPI_Comm_dup
 
 ```
+### Radix Sort Calltree
+```
+156.618 main
+├─ 0.000 MPI_Init
+├─ 21.247 data_init_runtime
+├─ 16.429 comm
+│  ├─ 15.940 comm_large
+│  │  └─ 15.940 MPI_Bcast
+│  └─ 0.489 comm_small
+│     ├─ 0.289 MPI_Scatter
+│     ├─ 0.000 MPI_Gather
+│     └─ 0.201 MPI_Gatherv
+├─ 133.551 comp
+│  ├─ 0.240 comp_small
+│  │  ├─ 0.014 MPI_Gather
+│  │  └─ 0.038 MPI_Bcast
+│  └─ 133.311 comp_large
+│     ├─ 6.155 MPI_Allgather
+│     └─ 3.876 MPI_Gatherv
+├─ 0.761 MPI_Barrier
+├─ 0.772 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.000 MPI_Comm_dup
+```
 
 
 
