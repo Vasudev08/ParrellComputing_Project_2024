@@ -90,6 +90,7 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 - Parallelization strategies (master/worker vs SPMD, calculating speedup and runtime differences)
 - Communication strategies (collectives vs point-to-point, measure runtime differences between code for each communication strategy)
 
+
 ### 3a. Caliper instrumentation
 Please use the caliper build `/scratch/group/csce435-f24/Caliper/caliper/share/cmake/caliper` 
 (same as lab2 build.sh) to collect caliper files for each experiment you run.
@@ -238,4 +239,3 @@ Submit a zip named `TeamX.zip` where `X` is your team number. The zip should con
 - Data: All `.cali` files used to generate the plots seperated by algorithm/implementation.
 - Jupyter notebook: The Jupyter notebook(s) used to generate the plots for the report.
 - Report.md
-
