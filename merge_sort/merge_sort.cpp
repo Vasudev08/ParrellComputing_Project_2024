@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <adiak.hpp>
 #include <caliper/cali.h>  // For Caliper instrumentation
-#include <cstdlib>         // For std::srand and std::rand
 
 // Function to merge two sorted arrays
 void merge(std::vector<int>& arr, int left, int mid, int right) {
@@ -58,6 +57,9 @@ void mergeSort(std::vector<int>& arr, int left, int right) {
 }
 
 int main(int argc, char* argv[]) {
+    
+    CALI_CXX_MARK_FUNCTION;
+    
     MPI_Init(&argc, &argv);
 
     int rank, size;
@@ -76,10 +78,9 @@ int main(int argc, char* argv[]) {
     // Master process initializes the data
     if (rank == 0) {
         data.resize(n);
-        std::srand(42);  // Seed the random number generator
         // Generate random numbers to sort
         for (int i = 0; i < n; ++i) {
-            data[i] = std::rand() % 100000;
+            data[i] = rand() % 100000;
         }
     }
 
@@ -88,19 +89,11 @@ int main(int argc, char* argv[]) {
 
     // Determine the size of each local array
     int local_n = n / size;
-    int remainder = n % size;
-    std::vector<int> local_data(local_n + (rank < remainder ? 1 : 0));
+    std::vector<int> local_data(local_n);
 
     // Scatter the data to all processes
-    std::vector<int> sendcounts(size);
-    std::vector<int> displs(size);
-    for (int i = 0; i < size; ++i) {
-        sendcounts[i] = local_n + (i < remainder ? 1 : 0);
-        displs[i] = i * local_n + std::min(i, remainder);
-    }
-
     CALI_MARK_BEGIN("comm");
-    MPI_Scatterv(data.data(), sendcounts.data(), displs.data(), MPI_INT, local_data.data(), local_data.size(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(data.data(), local_n, MPI_INT, local_data.data(), local_n, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("comm");
 
     // Each process sorts its local array
@@ -109,25 +102,43 @@ int main(int argc, char* argv[]) {
     CALI_MARK_END("comp");
 
     // Gather the sorted sub-arrays back to the master process
+    CALI_MARK_BEGIN("comm");
     CALI_MARK_BEGIN("comm_large");
-    MPI_Gatherv(local_data.data(), local_data.size(), MPI_INT, data.data(), sendcounts.data(), displs.data(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gather(local_data.data(), local_n, MPI_INT, data.data(), local_n, MPI_INT, 0, MPI_COMM_WORLD);
     CALI_MARK_END("comm_large");
+    CALI_MARK_END("comm");
 
     // Master process merges the sorted sub-arrays
     if (rank == 0) {
         CALI_MARK_BEGIN("comp_large");
         for (int i = 1; i < size; ++i) {
-            int mid = displs[i] - 1;
-            int right = displs[i] + sendcounts[i] - 1;
+            int mid = i * local_n - 1;  // mid-point for current segment
+            int right = (i + 1) * local_n - 1;  // right end for current segment
             merge(data, 0, mid, right);
         }
         CALI_MARK_END("comp_large");
 
+        // Print the first 10 elements of the sorted array
         std::cout << "Sorted array (first 10 elements): ";
         for (int i = 0; i < 10; ++i) {
             std::cout << data[i] << " ";
         }
         std::cout << std::endl;
+
+        // Check if the entire array is sorted
+        bool is_sorted = true;
+        for (int i = 1; i < n; ++i) {
+            if (data[i] < data[i - 1]) {
+                is_sorted = false;
+                break;
+            }
+        }
+
+        if (is_sorted) {
+            std::cout << "Array is sorted" << std::endl;
+        } else {
+            std::cout << "Array is not sorted" << std::endl;
+        }
     }
 
     // Collect metadata for the experiment
@@ -137,8 +148,7 @@ int main(int argc, char* argv[]) {
     adiak::value("size_of_data_type", sizeof(int));
     adiak::value("scalability", "strong");
 
-    // Finalize Adiak and MPI
-    //adiak::finalize();
+    // Finalize MPI
     MPI_Finalize();
 
     return 0;
