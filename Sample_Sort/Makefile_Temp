@@ -1,4 +1,4 @@
-# Makefile for Sample Sort Test Program
+# Makefile for merge Sort Test Program
 
 # Compiler
 CXX = mpic++
@@ -6,18 +6,22 @@ CXX = mpic++
 # Compiler flags
 CXXFLAGS = -Wall -g
 
+# Linker flags
+LDFLAGS = -L/usr/local/lib -lcaliper -ladiak
+
 # Source files
-SRCS = sample_sort.cpp
+SRCS = merge_sort.cpp
 
 # Output executable name
-TARGET = sample_sort_test
+TARGET = merge_sort_test
 
 # Default target
+
 all: $(TARGET)
 
 # Rule to build the executable
 $(TARGET): $(SRCS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRCS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRCS) 
 
 # Clean up the build files
 clean:
