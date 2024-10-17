@@ -72,15 +72,19 @@ int main(int argc, char* argv[]) {
     adiak::value("programming_model", "mpi");
     adiak::value("group_num", 18);
 
-    int n = 1000000;  // Total number of elements (example: 1 million)
-    std::vector<int> data;
+    long n = atol(argv[1]);  // Total number of elements
+    //int* original_array = (int*)malloc(n * sizeof(int));
+
+
+    //int n = 1000000;  // Total number of elements (example: 1 million)
+    std::vector<int> data(n);
 
     // Master process initializes the data
     if (rank == 0) {
-        data.resize(n);
+        // data.resize(n);
         // Generate random numbers to sort
         for (int i = 0; i < n; ++i) {
-            data[i] = rand() % 100000;
+            data[i] = rand() % n;
         }
     }
 
@@ -120,11 +124,20 @@ int main(int argc, char* argv[]) {
         CALI_MARK_END("comp_large");
         CALI_MARK_END("comp");
 
-        std::cout << "Sorted array (first 10 elements): ";
-        for (int i = 0; i < 10; ++i) {
-            std::cout << data[i] << " ";
+        int is_sorted = 1;
+        for (int i = 1; i < n - 1; i++) {
+            if (data[i] > data[i - 1]) {
+                is_sorted = 0;
+                break;
+            }
         }
-        std::cout << std::endl;
+
+        if (is_sorted) {
+            std::cout << "Array is sorted" << std::endl;
+        } else {
+            std::cout << "Array is not sorted" << std::endl;
+        }
+
     }
 
     // Collect metadata for the experiment
