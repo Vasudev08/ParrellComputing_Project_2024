@@ -157,6 +157,41 @@ int main(int agrc, char* argv[]) {
     
     int c;
     srand(time(NULL));
+
+    std::string input_type = argx[2];
+
+    switch (input_type[0]) {
+        case 'r': //Random
+            for (int c = 0; c < n; c++) {
+                original_array[c] = rand() % n;
+            }
+            break;
+        case 's': //sorted
+            for (int c = 0; c < n; c++) {
+                original_array[c] = c;
+            }
+            break;
+        case 'v': // Reverse sorted
+            for (int c = 0; c < n; c++) {
+                original_array[c] = n - c -1;
+            }
+            break;
+        case 'p': // 1% perturbation
+            for (int c = 0; c < n; c++) {
+                original_array[c] = c;
+            }
+            // Introduce 1% perturbation
+            int num_perturbations = n / 100; // 1% of the array size
+            for (int i = 0; i < num_perturbations; i++) {
+                int index = rand() % n;
+                original_array[index] = rand() % n; // Replace with random value
+            }
+            break;
+        default:
+            std::cout << "Invalid input type. Use 'sorted', 'random', 'reverse_sorted', or 'perturbed'.\n";
+            free(original_array);
+            return 1;
+    }
     
     for (c = 0; c < n; c++) {
         original_array[c] = rand() % n;
@@ -402,7 +437,7 @@ int main(int agrc, char* argv[]) {
 
 		int isSorted = 1;
         for (int i = 0; i < n - 1; i++) {
-            std::cout << last_array_sorted[i] << std::endl;
+            //std::cout << last_array_sorted[i] << std::endl;
 
             if (last_array_sorted[i] > last_array_sorted[i + 1]) {
                 std::cout << last_array_sorted[i] << std::endl;
