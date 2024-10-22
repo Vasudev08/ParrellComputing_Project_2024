@@ -117,6 +117,7 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 - Parallelization strategies (master/worker vs SPMD, calculating speedup and runtime differences)
 - Communication strategies (collectives vs point-to-point, measure runtime differences between code for each communication strategy)
 
+
 ### 3a. Caliper instrumentation
 Please use the caliper build `/scratch/group/csce435-f24/Caliper/caliper/share/cmake/caliper` 
 (same as lab2 build.sh) to collect caliper files for each experiment you run.
@@ -218,32 +219,52 @@ CALI_MARK_END("comp");
 └─ 0.001 MPI_Comm_dup
 
 ```
-### Radix Sort Calltree
+#### Radix Sort Calltree
 ```
-156.618 main
+0.396 main
 ├─ 0.000 MPI_Init
-├─ 21.247 data_init_runtime
-├─ 16.429 comm
-│  ├─ 15.940 comm_large
-│  │  └─ 15.940 MPI_Bcast
-│  └─ 0.489 comm_small
-│     ├─ 0.289 MPI_Scatter
+├─ 0.000 data_init_runtime
+├─ 0.004 comm
+│  ├─ 0.003 comm_large
+│  │  └─ 0.003 MPI_Bcast
+│  └─ 0.001 comm_small
+│     ├─ 0.000 MPI_Scatter
 │     ├─ 0.000 MPI_Gather
-│     └─ 0.201 MPI_Gatherv
-├─ 133.551 comp
-│  ├─ 0.240 comp_small
-│  │  ├─ 0.014 MPI_Gather
-│  │  └─ 0.038 MPI_Bcast
-│  └─ 133.311 comp_large
-│     ├─ 6.155 MPI_Allgather
-│     └─ 3.876 MPI_Gatherv
-├─ 0.761 MPI_Barrier
-├─ 0.772 correctness_check
+│     └─ 0.000 MPI_Gatherv
+├─ 0.003 comp
+│  ├─ 0.000 comp_small
+│  │  ├─ 0.000 MPI_Gather
+│  │  └─ 0.000 MPI_Bcast
+│  └─ 0.003 comp_large
+│     ├─ 0.001 MPI_Allgather
+│     └─ 0.001 MPI_Gatherv
+├─ 0.000 MPI_Barrier
+├─ 0.000 correctness_check
 ├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Initialized
 ├─ 0.000 MPI_Finalized
-└─ 0.000 MPI_Comm_dup
+└─ 0.002 MPI_Comm_dup
 ```
+
+#### Bitonic Sort Calltree
+
+```
+4.972 main
+├─ 0.000 MPI_Init
+└─ 2.803 comp
+   └─ 2.803 comp_large
+├─ 2.169 comm
+│  └─ 2.169 comm_large
+│     ├─ 2.163 MPI_Scatter 
+│     └─ 0.007 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Init
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Finalized
+├─ 0.000 MPI_Initialized
+└─ 24.052 MPI_Comm_dup
+```
+
 
 
 
@@ -344,6 +365,83 @@ profile
 
 ```
 
+#### Radix Sort Metadata
+```
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
+
+            launchdate                                          libraries  \
+profile                                                                     
+3133824840  1729137630  [/scratch/group/csce435-f24/Caliper/caliper/li...   
+
+                                cmdline cluster algorithm programming_model  \
+profile                                                                       
+3133824840  [./radix_sort, --size, 128]       c     radix               mpi   
+
+           data_type  size_of_data_type  input_size input_type  num_procs  \
+profile                                                                     
+3133824840       int                  4         128     Random          2   
+
+           scalability  group_num implementation_source  
+profile                                                  
+3133824840      strong         18                online  
+```
+
+#### Bitonic Sort Metadata
+```
+cali.caliper.version  mpi.world.size  \
+profile                                           
+1981606483               2.11.0              16   
+
+                                                 spot.metrics  \
+profile                                                         
+1981606483  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+1981606483                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+1981606483  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+1981606483         spot            true  p16-a16.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+1981606483              true                true               true   
+
+            launchdate                                          libraries  \
+...
+
+           scalability  group_num implementation_source  
+profile
+1981606483      weak          1           online  
+```                                        
+
 ## 4. Performance evaluation
 
 Include detailed analysis of computation performance, communication performance. 
@@ -398,4 +496,3 @@ Submit a zip named `TeamX.zip` where `X` is your team number. The zip should con
 - Data: All `.cali` files used to generate the plots seperated by algorithm/implementation.
 - Jupyter notebook: The Jupyter notebook(s) used to generate the plots for the report.
 - Report.md
-
