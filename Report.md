@@ -465,25 +465,13 @@ N/A
 
 ## Sample Sort
 ### Strong Scaling
-![comm_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/d0d0ec61-cceb-458d-937c-c66253dbb9e5)
-
-![comp_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/5c8e24de-e59b-4bcf-be20-7771ad21ff01)
-
 ![main_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/5a1bc5a7-3be3-47ef-a4cf-4b1396d88b17)
 
 ### Strong Speed-Up
-
-![comm_s_strong_speeduP](https://github.com/user-attachments/assets/525deba2-fb26-4ee0-a8f5-3f638c60565a)
-
-![comp_s_strong_speeduP](https://github.com/user-attachments/assets/1d5c48a7-b096-403c-8c02-d7cf92f02e45)
-
 ![main_s_strong_speeduP](https://github.com/user-attachments/assets/bd9f9dc3-a82c-4e1e-9ea6-80297ddb0076)
 
+
 ### Weak Scaling
-![comm_s_weak_scaling](https://github.com/user-attachments/assets/7981bbd4-2f38-4dc5-b7cd-d7d21e897632)
-
-![comp_s_weak_scaling](https://github.com/user-attachments/assets/26fbb782-6ce8-487b-9823-7f24f6d616e1)
-
 ![comm_s_weak_scaling](https://github.com/user-attachments/assets/00f6d1c2-0142-4c75-b4d1-31337fead692)
 
 
