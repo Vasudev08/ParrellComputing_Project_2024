@@ -465,11 +465,19 @@ N/A
 ###Weak Scaling
 ![weak_scaling_main_data_type_p](https://github.com/user-attachments/assets/5f8d344e-db31-491e-9fc2-ef488d11b4aa)
 
+This plot demonstrates the weak scaling behavior of the communication phase for data type "p" as the number of processes increases. The average time per chunk generally increases with the number of processes, which is expected in weak scaling scenarios where the workload per process remains constant as the system size grows.
+
+
 ### Speed up
 ![speedup_comm_data_type_p](https://github.com/user-attachments/assets/7e0a9a67-b8a2-4009-9d32-ad28fef8ccec)
 
+The speedup plot for the communication phase shows an initial increase in performance as the number of processes scales up to 8, indicating effective parallelization. However, beyond 16 processes, the speedup fluctuates and drops off, reflecting diminishing returns due to communication overhead.
+
 ### Strong Scaling
 ![strong_scaling_main_input_size_65536](https://github.com/user-attachments/assets/9f6af68b-a735-45a6-b824-d19f8814ba95)
+
+This plot shows the main task's strong scaling behavior for an input size of \(2^{16}\) (65536), focusing on the average time per chunk as the number of processes increases. As the number of processes increases, the average time per chunk rises consistently, indicating that the overhead of managing more processes adds to the time complexity. This suggests that the main process becomes a bottleneck as more processes are introduced, likely due to the increased coordination and synchronization required.
+
 
 
 ## Sample Sort
