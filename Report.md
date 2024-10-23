@@ -104,6 +104,7 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 - Parallelization strategies (master/worker vs SPMD, calculating speedup and runtime differences)
 - Communication strategies (collectives vs point-to-point, measure runtime differences between code for each communication strategy)
 
+
 ### 3a. Caliper instrumentation
 Please use the caliper build `/scratch/group/csce435-f24/Caliper/caliper/share/cmake/caliper` 
 (same as lab2 build.sh) to collect caliper files for each experiment you run.
