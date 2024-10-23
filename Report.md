@@ -485,6 +485,10 @@ N/A
 
 
 
+Sample sort overall performance: As we increase the no. of processors and length of our array, we see an increase in communication time due to the overhead to sync between all the processors, but we also observe an decrease in computation time as we increased the no. of processors. As we sample sort we could efficiently dvided our array into more no. of buckets which made the sorting easier.
+
+
+
 
 
 ## Radix Sort
