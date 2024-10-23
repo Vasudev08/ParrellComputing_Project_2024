@@ -500,7 +500,23 @@ Sample sort overall performance: As we increase the no. of processors and length
 
 ![mainStrong28](https://github.com/user-attachments/assets/72e2eb3c-5550-4d67-8f17-2e9a98319dcc)
 
+### Strong Scaling Speed-Up
 
+![SSScomm](https://github.com/user-attachments/assets/ae4abff9-5309-411e-b146-511c2d87991c)
+
+![SSScomp](https://github.com/user-attachments/assets/c336c1ea-e1e5-4061-85d5-b84c3210cda1)
+
+![SSSmain](https://github.com/user-attachments/assets/db9b5cef-03b6-4e52-b688-506d7dac2f34)
+
+### Weak Scaling 
+
+![weakcomm](https://github.com/user-attachments/assets/1ab9c34e-894c-4684-b1f9-0a9f1374f78d)
+
+![weakcomp](https://github.com/user-attachments/assets/6723023e-482e-43c6-8aec-f43a8206715e)
+
+![weakmain](https://github.com/user-attachments/assets/b188979d-774c-4525-8533-73d2ba404b3c)
+
+### Analysis
 Radix Sort Overall Performance: The plots showed behaviors mostly in line with behaviors observed in previous labs when working with different input sizes and processor counts. This time however, there were different input types, and they mostly had impacts on communication. As input sizes increased, communication times often took longer. As processor counts increased, computation times often took less time. There were some kinks that could be worked out to improve the Caliper data, but this is mostly representative of the true data.
 
 Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users. There are some improvements that could be made to the code, however due to issues with the Grace scheduler, getting new data has been incredibly difficult. Issues with Jupyter and with local modules also made getting plots difficult.
