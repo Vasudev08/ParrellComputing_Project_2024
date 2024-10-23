@@ -444,6 +444,22 @@ profile
 
 ## 4. Performance evaluation
 
+## Bitonic Sort
+### Strong Scaling
+![strong22](https://github.com/user-attachments/assets/0b5078c1-1e8d-43c5-8c4b-80a93628f969)
+![strong20](https://github.com/user-attachments/assets/73ccecf7-aff0-4340-aa49-544e5a8cd27a)
+![strong18](https://github.com/user-attachments/assets/7e38ab75-773c-4ac1-bf11-9db630a6802b)
+![strong16](https://github.com/user-attachments/assets/e9e5b9bd-37ae-496e-aea7-77d726fca6d3)
+
+
+### Strong Speed-Up
+![sortedstrongspeedup](https://github.com/user-attachments/assets/d221e2c6-91db-47f3-9dbe-42528bcc10e1)
+![reversestrongspeedup](https://github.com/user-attachments/assets/a68138f4-f740-4b9c-a84e-6c696a22ee1a)
+![randomstrongspeedup](https://github.com/user-attachments/assets/b083756f-58cf-4011-bb88-db18b76eea7f)
+
+### Weak Scaling
+N/A
+
 ## Merge Sort
 
 
