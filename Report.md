@@ -448,6 +448,18 @@ profile
 
 
 ## Sample Sort
+![comm_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/d0d0ec61-cceb-458d-937c-c66253dbb9e5)
+
+![comp_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/5c8e24de-e59b-4bcf-be20-7771ad21ff01)
+
+![main_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/5a1bc5a7-3be3-47ef-a4cf-4b1396d88b17)
+
+
+
+
+
+
+
 
 Include detailed analysis of computation performance, communication performance. 
 Include figures and explanation of your analysis.
