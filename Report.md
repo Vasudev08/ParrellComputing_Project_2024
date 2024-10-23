@@ -474,8 +474,8 @@ profile
 
 
 
-##Radix Sort
-###Strong Scaling
+## Radix Sort
+### Strong Scaling
 
 ![commStrong28](https://github.com/user-attachments/assets/b23715aa-37af-419e-8595-8f381e238e5f)
 
