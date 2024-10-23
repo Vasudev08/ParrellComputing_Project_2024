@@ -474,7 +474,7 @@ N/A
 
 ## Sample Sort
 ### Strong Scaling
-![main_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/5a1bc5a7-3be3-47ef-a4cf-4b1396d88b17)
+![comp_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/c843ddde-6da6-4d2c-8c18-edb2f1638cd3)
 
 ### Strong Speed-Up
 ![main_s_strong_speeduP](https://github.com/user-attachments/assets/bd9f9dc3-a82c-4e1e-9ea6-80297ddb0076)
