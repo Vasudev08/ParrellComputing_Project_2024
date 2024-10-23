@@ -461,14 +461,14 @@ profile
 N/A
 
 ## Merge Sort
-## Merge Sort
-### Strong Scaling
+
+###Weak Scaling
 ![weak_scaling_main_data_type_p](https://github.com/user-attachments/assets/5f8d344e-db31-491e-9fc2-ef488d11b4aa)
 
-
+### Speed up
 ![speedup_comm_data_type_p](https://github.com/user-attachments/assets/7e0a9a67-b8a2-4009-9d32-ad28fef8ccec)
 
-
+### Strong Scaling
 ![strong_scaling_main_input_size_65536](https://github.com/user-attachments/assets/9f6af68b-a735-45a6-b824-d19f8814ba95)
 
 
