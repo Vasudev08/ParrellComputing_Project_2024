@@ -474,12 +474,14 @@ profile
 
 
 
+##Radix Sort
+###Strong Scaling
 
+![commStrong28](https://github.com/user-attachments/assets/b23715aa-37af-419e-8595-8f381e238e5f)
 
+![compStrong28](https://github.com/user-attachments/assets/03ecc45c-686a-4eca-aebc-315e5a754198)
 
-
-
-
+![mainStrong28](https://github.com/user-attachments/assets/72e2eb3c-5550-4d67-8f17-2e9a98319dcc)
 
 
 
