@@ -500,6 +500,11 @@ N/A
 ![mainStrong28](https://github.com/user-attachments/assets/72e2eb3c-5550-4d67-8f17-2e9a98319dcc)
 
 
+Radix Sort Overall Performance: The plots showed behaviors mostly in line with behaviors observed in previous labs when working with different input sizes and processor counts. This time however, there were different input types, and they mostly had impacts on communication. As input sizes increased, communication times often took longer. As processor counts increased, computation times often took less time. There were some kinks that could be worked out to improve the Caliper data, but this is mostly representative of the true data.
+
+Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users. There are some improvements that could be made to the code, however due to issues with the Grace scheduler, getting new data has been incredibly difficult. Issues with Jupyter and with local modules also made getting plots difficult.
+
+
 
 
 
