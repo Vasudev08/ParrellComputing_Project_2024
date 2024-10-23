@@ -444,6 +444,11 @@ profile
 
 ## 4. Performance evaluation
 
+## Merge Sort
+
+
+## Sample Sort
+
 Include detailed analysis of computation performance, communication performance. 
 Include figures and explanation of your analysis.
 
