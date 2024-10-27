@@ -19,12 +19,14 @@
 #
 array_exponent=$1     # The first argument passed to sbatch will be used as the array size exponent
 processes=$2          # The second argument passed to sbatch will be used as the number of processes
+input_type=$3         # The third argument passed to sbatch will be used as the input type
 
 module load intel/2020b       # Load Intel software stack
 module load CMake/3.12.1
 module load GCCcore/8.3.0
+module load PAPI/6.0.0
 
 # Set up the Caliper profiling tool with the appropriate configuration
-CALI_CONFIG="spot(output=p${processes}-a${array_exponent}.cali, \
+CALI_CONFIG="spot(output=p${processes}-a${array_exponent}-${input_type}.cali, \
     time.variance,profile.mpi)" \
-mpirun -np $processes ./bitonic_sort $array_exponent $processes
+mpirun -np $processes ./bitonic_sort $array_exponent $processes $input_type

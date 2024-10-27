@@ -1,148 +1,49 @@
-
-// /******************************************************************************
-// * FILE: bitonic_sort.cpp
-// * DESCRIPTION:  
-// *   MPI Bitonic Sort in C++
-// *   This code distributes the sorting operation across multiple processes.
-// * AUTHOR: Anna Hartman
-// * LAST REVISED: 10/09/24
-// ******************************************************************************/
-
-
-// #include <iostream>
-// #include <vector>
-// #include <algorithm>
-// #include <cstdlib> 
-// #include <ctime>   
-// #include <cmath>
-// #include <mpi.h>
-
-// void bitonicMerge(std::vector<int>& arr, int low, int count, bool dir) {
-//     if (count > 1) {
-//         int k = count / 2;
-//         for (int i = low; i < low + k; i++) {
-//             if (dir == (arr[i] > arr[i + k])) {
-//                 std::swap(arr[i], arr[i + k]);
-//             }
-//         }
-//         bitonicMerge(arr, low, k, dir);
-//         bitonicMerge(arr, low + k, k, dir);
-//     }
-// }
-
-// void bitonicSort(std::vector<int>& arr, int low, int count, bool dir) {
-//     if (count > 1) {
-//         int k = count / 2;
-//         bitonicSort(arr, low, k, true);  // Sort in ascending order
-//         bitonicSort(arr, low + k, k, false); // Sort in descending order
-//         bitonicMerge(arr, low, count, dir); // Merge the result
-//     }
-// }
-
-// void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs) {
-//     // Calculate local array size
-//     int localSize = size / numProcs;
-//     std::vector<int> localArr(localSize);
-
-//     // Scatter the array to all processes
-//     MPI_Scatter(arr.data(), localSize, MPI_INT, localArr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD);
-
-//     std::cout << "Process " << rank << " received: ";
-//     for (int i = 0; i < localSize; i++) {
-//         std::cout << localArr[i] << " ";
-//     }
-//     std::cout << std::endl;
-
-//     // Sort the local array
-//     bitonicSort(localArr, 0, localSize, true);
-//     // std::cout << "Process " << rank << " sorted its part: ";
-//     // for (int i = 0; i < localSize; i++) {
-//     //     std::cout << localArr[i] << " ";
-//     // }
-//     // std::cout << std::endl;
-
-//     // Gather sorted local arrays back to the root process
-//     MPI_Gather(localArr.data(), localSize, MPI_INT, arr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD);
-
-//     // Merge the sorted arrays in the root process
-//     if (rank == 0) {
-//         // std::cout << "Root process is merging the sorted arrays." << std::endl;
-//         bitonicSort(arr, 0, size, true); // Sort the gathered array
-//     }
-// }
-
-// int main(int argc, char** argv) {
-//     MPI_Init(&argc, &argv);
-
-//     int rank, numProcs;
-//     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-//     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-
-//     // Ensure that two arguments (size and number of processes) are provided
-//     if (argc < 3) {
-//         if (rank == 0) {
-//             std::cerr << "Usage: " << argv[0] << " <size exponent> <number of processes>" << std::endl;
-//         }
-//         MPI_Finalize();
-//         return 1;
-//     }
-
-//     // Parse arguments
-//     int exponent = std::atoi(argv[1]);  // Get the exponent (size)
-//     int size = std::pow(2, exponent);   // Calculate size as 2^exponent
-//     int requestedProcs = std::atoi(argv[2]);  // Get the requested number of processes
-
-
-//     if (numProcs != requestedProcs) {
-//         if (rank == 0) {
-//             std::cerr << "Error: The number of processes specified (" << requestedProcs 
-//                       << ") does not match the number of processes started (" << numProcs << ")." << std::endl;
-//         }
-//         MPI_Finalize();
-//         return 1;
-//     }
-
-//     std::vector<int> arr;
-
-//     if (rank == 0) {
-//         // Seed the random number generator and create a random array
-//         srand(static_cast<unsigned int>(time(nullptr))); 
-//         arr.resize(size);
-//         for (int i = 0; i < size; i++) {
-//             arr[i] = rand() % 100; // Random numbers between 0 and 99
-//         }
-//         // std::cout << "Initial array: ";
-//         // for (int i : arr) std::cout << i << " ";
-//         // std::cout << std::endl;
-//     }
-
-//     // Perform the parallel bitonic sort
-//     parallelBitonicSort(arr, size, rank, numProcs);
-
-//     // Print the sorted array in the root process
-//     if (rank == 0) {
-//         // std::cout << "Sorted array: ";
-//         // for (int i : arr) std::cout << i << " ";
-//         // std::cout << std::endl;
-//     }
-
-//     MPI_Finalize();
-//     return 0;
-// }
-
+// Code with Caliper Time Implementation 
+// *********************************************************************************
+// *********************************************************************************
+// *********************************************************************************
+// *********************************************************************************
+// *********************************************************************************
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <cstdlib> // For rand() and srand()
+#include <stdlib.h> // For rand() and srand()
 #include <ctime>   // For time()
-#include <mpi.h>
+#include "mpi.h"
 #include <caliper/cali.h>
+#include <caliper/cali-manager.h>
 #include <adiak.hpp>
 #include <cmath>
 
+// Create input for bitonic sort
+void generateInput(std::vector<int>& arr, int size, const std::string& input_type) {
+    if (input_type == "sorted") {
+        for (int i = 0; i < size; i++) {
+            arr[i] = i;
+        }
+    } else if (input_type == "reverse_sorted") {
+        for (int i = 0; i < size; i++) {
+            arr[i] = size - i;
+        }
+    } else if (input_type == "random") {
+        for (int i = 0; i < size; i++) {
+            arr[i] = rand() % 100000; // Random numbers between 0 and 100000
+        }
+    } else if (input_type == "perturbed") {
+        for (int i = 0; i < size; i++) {
+            arr[i] = i;
+        }
+        int swaps = size * 0.01; // 1% perturbed
+        for (int i = 0; i < swaps; i++) {
+            int idx1 = rand() % size;
+            int idx2 = rand() % size;
+            std::swap(arr[idx1], arr[idx2]);
+        }
+    }
+}
+
 void bitonicMerge(std::vector<int>& arr, int low, int count, bool dir) {
-    CALI_MARK_BEGIN("comp");
     if (count > 1) {
         int k = count / 2;
         for (int i = low; i < low + k; i++) {
@@ -153,18 +54,20 @@ void bitonicMerge(std::vector<int>& arr, int low, int count, bool dir) {
         bitonicMerge(arr, low, k, dir);
         bitonicMerge(arr, low + k, k, dir);
     }
-    CALI_MARK_END("comp");
+
 }
 
 void bitonicSort(std::vector<int>& arr, int low, int count, bool dir) {
-    CALI_MARK_BEGIN("comp");
     if (count > 1) {
         int k = count / 2;
         bitonicSort(arr, low, k, true);  // Sort in ascending order
         bitonicSort(arr, low + k, k, false); // Sort in descending order
+
+        
         bitonicMerge(arr, low, count, dir); // Merge the result
+        
     }
-    CALI_MARK_END("comp");
+
 }
 
 void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs) {
@@ -172,47 +75,46 @@ void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs
     int localSize = size / numProcs;
     std::vector<int> localArr(localSize);
 
-    // Scatter the array to all processes
-    CALI_MARK_BEGIN("comm");
-    if (localSize <= 10) {  // Arbitrary small size for demonstration
-        CALI_MARK_BEGIN("comm_small");
-    } else {
-        CALI_MARK_BEGIN("comm_large");
-    }
-    MPI_Scatter(arr.data(), localSize, MPI_INT, localArr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END(localSize <= 10 ? "comm_small" : "comm_large");
-    CALI_MARK_END("comm");
+    // Start communication timing for scatter
+    CALI_MARK_BEGIN("comm_scatter");
+    double comm_start = MPI_Wtime();
 
-    // std::cout << "Process " << rank << " received: ";
-    // for (int i = 0; i < localSize; i++) {
-    //     std::cout << localArr[i] << " ";
-    // }
-    // std::cout << std::endl;
+    // Scatter the array to all processes
+    MPI_Scatter(arr.data(), localSize, MPI_INT, localArr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // End communication timing for scatter
+    double comm_end = MPI_Wtime();
+    CALI_MARK_END("comm_scatter");
+    double comm_time = comm_end - comm_start;
 
     // Sort the local array
     bitonicSort(localArr, 0, localSize, true);
-    // std::cout << "Process " << rank << " sorted its part: ";
-    // for (int i = 0; i < localSize; i++) {
-    //     std::cout << localArr[i] << " ";
-    // }
-    // std::cout << std::endl;
+
+    // Start communication timing for gather
+    CALI_MARK_BEGIN("comm_gather");
+    comm_start = MPI_Wtime();
 
     // Gather sorted local arrays back to the root process
-    CALI_MARK_BEGIN("comm");
-    if (localSize <= 10) {  // Arbitrary small size for demonstration
-        CALI_MARK_BEGIN("comm_small");
-    } else {
-        CALI_MARK_BEGIN("comm_large");
-    }
     MPI_Gather(localArr.data(), localSize, MPI_INT, arr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD);
-    CALI_MARK_END(localSize <= 10 ? "comm_small" : "comm_large");
-    CALI_MARK_END("comm");
+
+    comm_end = MPI_Wtime();
+    CALI_MARK_END("comm_gather");
+    comm_time += (comm_end - comm_start);
+
+    // You can also reduce the communication times if needed
+    double total_comm_time;
+    MPI_Reduce(&comm_time, &total_comm_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        std::cout << "Total communication time: " << total_comm_time << " seconds" << std::endl;
+    }
 
     // Merge the sorted arrays in the root process
     if (rank == 0) {
-        // Perform a bitonic merge for the whole array
-        // std::cout << "Root process is merging the sorted arrays." << std::endl;
+        CALI_MARK_BEGIN("comp");
         bitonicSort(arr, 0, size, true); // Sort the gathered array
+        CALI_MARK_END("comp");
+
     }
 }
 
@@ -227,25 +129,29 @@ bool isSorted(const std::vector<int>& arr) {
 }
 
 int main(int argc, char** argv) {
-   MPI_Init(&argc, &argv);
+    // Create caliper ConfigManager object
+    cali::ConfigManager mgr;
+    mgr.start();
+
+    CALI_MARK_BEGIN("main");
+    MPI_Init(&argc, &argv);
 
     int rank, numProcs;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
-    // Ensure that two arguments (size and number of processes) are provided
-    if (argc < 3) {
+    if (argc < 4) {
         if (rank == 0) {
-            std::cerr << "Usage: " << argv[0] << " <size exponent> <number of processes>" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <size exponent> <number of processes> <input_type>" << std::endl;
         }
         MPI_Finalize();
         return 1;
     }
 
-    // Parse arguments
+    std::string input_type = argv[3];
     int exponent = std::atoi(argv[1]);  // Get the exponent (size)
     int size = std::pow(2, exponent);   // Calculate size as 2^exponent
-    int requestedProcs = std::atoi(argv[2]);  // Get the requested number of processes
+    int requestedProcs = std::atoi(argv[2]);
 
     if (numProcs != requestedProcs) {
         if (rank == 0) {
@@ -257,20 +163,13 @@ int main(int argc, char** argv) {
     }
 
     std::vector<int> arr;
-
     if (rank == 0) {
-        // Seed the random number generator and create a random array
         srand(static_cast<unsigned int>(time(nullptr)));
         arr.resize(size);
-        for (int i = 0; i < size; i++) {
-            arr[i] = rand() % 10000; // Random numbers between 0 and 99
-        }
-        // std::cout << "Initial array: ";
-        // for (int i : arr) std::cout << i << " ";
-        // std::cout << std::endl;
+        generateInput(arr, size, input_type);
 
-        // Caliper metadata collection
         adiak::init(NULL);
+        adiak::user();
         adiak::launchdate();
         adiak::libraries();
         adiak::cmdline();
@@ -280,25 +179,31 @@ int main(int argc, char** argv) {
         adiak::value("data_type", "int");
         adiak::value("size_of_data_type", sizeof(int));
         adiak::value("input_size", size);
-        adiak::value("input_type", "Random");
+        adiak::value("input_type", input_type);
         adiak::value("num_procs", numProcs);
-        adiak::value("scalability", "weak"); // Adjust based on your algorithm
-        adiak::value("group_num", 1); // Adjust as needed
-        adiak::value("implementation_source", "handwritten"); // Adjust as needed
     }
 
-    // Perform the parallel bitonic sort
-    CALI_MARK_BEGIN("main");
+    double start_time = MPI_Wtime();
     parallelBitonicSort(arr, size, rank, numProcs);
-    CALI_MARK_END("main");
+    double end_time = MPI_Wtime();
+    double local_time = end_time - start_time;
 
-    // Print the sorted array in the root process
+    double min_time, max_time, avg_time, total_time;
+    MPI_Reduce(&local_time, &min_time, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&local_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&local_time, &total_time, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
     if (rank == 0) {
-        std::cout << "Sorted array: ";
-        for (int i : arr) std::cout << i << " ";
-        std::cout << std::endl;
+        avg_time = total_time / numProcs;
+        std::cout << "Min time: " << min_time << ", Max time: " << max_time 
+                  << ", Avg time: " << avg_time << ", Total time: " << total_time << std::endl;
+    }
 
-        // Correctness check
+    if (rank == 0) {
+        // std::cout << "Sorted array: ";
+        // for (int i : arr) std::cout << i << " ";
+        // std::cout << std::endl;
+
         CALI_MARK_BEGIN("correctness_check");
         if (isSorted(arr)) {
             std::cout << "Array is sorted correctly." << std::endl;
@@ -308,6 +213,11 @@ int main(int argc, char** argv) {
         CALI_MARK_END("correctness_check");
     }
 
+    CALI_MARK_END("main");
+    // Flush Caliper output before finalizing MPI
+    mgr.stop();
+    mgr.flush();
     MPI_Finalize();
     return 0;
 }
+
