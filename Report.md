@@ -473,17 +473,31 @@ profile
 ![comp_a18](https://github.com/user-attachments/assets/d44ee59c-d259-41dc-91b3-38d197d1e27f)
 ![comp_a16](https://github.com/user-attachments/assets/40212fb9-e48f-44e0-8509-0248cc89b106)
 
+Analysis:
+The strong scaling plots show how the execution time decreases as the number of processors increases while keeping the problem size constant for sizes 2^16 through 2^28. Ideally, the execution time should decrease proportionally with the increase in the number of processors. With these plots, the strong scaling curve shows diminishing returns as more processors are added. This is due to overhead from inter-processor communication, synchronization, and non-parallelizable portions of the algorithm (as per Amdahl's law). It is worth noting that the time reduces much more linearly with large problem sizes, meaning that parallelization is more effective and has more returns with a larger problem size. For larger problem sizes, the actual computational work increases significantly, and the overhead becomes a smaller fraction of the total work. The efficiency of parallelization improves with larger problem sizes, because the computational gains outweigh the overhead.
+Another observation is that the communication time is overall much higher for random inputs than for the other types of inputs (as seen in the Comm plots). This could be because random inputs generally result in more frequent and scattered data transfers between processors, which increases the need for synchronization. Each time processors exchange data, they must often wait for each other to complete their communication before proceeding to the next step. This synchronization could introduce delays, especially when communication patterns are irregular and unpredictable, as with random data.
+For the comp_large graphs, it is clear that the times decreased linearly consistently with the increase in the number of processes. The underlying bitonic algorithm used for comp_large scales well with the number of processes. The computational workload increases enough to offset the overhead of managing multiple processes, as with comp_large, where the algorithm is designed to take full advantage of the parallel architecture, minimizing any bottlenecks that might otherwise prevent linear scaling.
+
+
+
 ### Strong Speed-Up
 ![sorted](https://github.com/user-attachments/assets/f48b7fbe-05ad-41fc-9d54-b2ea4d1f0374)
 ![reverse](https://github.com/user-attachments/assets/0d5c0a6e-b30c-47d7-9956-45525b41161f)
 ![random](https://github.com/user-attachments/assets/a9c39c8b-d020-4d14-b9bb-d87d1aaeb2ce)
 ![perturbed](https://github.com/user-attachments/assets/71c76849-9baf-4487-822f-3dd3b11910ea)
 
+Analysis:
+It is clear from the plots that the speedup decreases for all of the types of inputs and problem sizes, though it is the highest for the larger problem sizes. The consistent decrease in speedup is likely due to growing communication overhead, as more processes require more data exchanges, and synchronization delays increase. Amdahl's Law plays a role by limiting the speedup as non-parallelizable parts of the algorithm, like merging and comparing, become bottlenecks. Load imbalances between processes, increased cache contention, and memory bandwidth issues could also further reduce efficiency. Data needs to be exchanged between processes frequently to ensure the correct ordering of elements. This communication overhead can start to dominate the benefits of parallelization, especially as the number of processes grows. The more processors involved, the more data exchanges are needed, which results in diminishing returns in speedup.
+
+
 ### Weak Scaling
 ![main_sorted](https://github.com/user-attachments/assets/a1458da2-18d2-4e0e-9dbf-bbaa39137c72)
 ![main_reverse](https://github.com/user-attachments/assets/e6ee400e-fcd9-4f2e-bf83-6ccbee8d3ab9)
 ![main_random](https://github.com/user-attachments/assets/9ebce101-af6f-4393-a88a-196e1ef7f5d7)
 ![main_perturbed](https://github.com/user-attachments/assets/1cbed48f-2766-4a86-8b05-b2d6ed66c501)
+
+Analysis:
+It is observed that the average time per rank increases for the smaller problem sizes and decreases for the larger problem sizes. For smaller problem sizes, the communication overhead becomes more significant compared to the actual computation each process has to perform. Bitonic sort involves frequent communication between processes, so smaller inputs don't have enough computational work to offset the communication time. As a result, the average time per rank increases because the overhead dominates the computation. But for larger problem sizes, the amount of computation per process increases significantly, which helps amortize the communication overhead. The processes spend more time on computation relative to communication, leading to a decrease in the average time per rank. In addition, with small inputs, adding more processes doesn’t fully utilize the available resources, meaning that some processes may remain idle or underused. The increased number of processes introduces unnecessary communication and synchronization overhead for small workloads, resulting in increased time per rank. For larger inputs, however, the workload scales with the number of processes, making each process more efficiently utilized, which lowers the average time per rank.
 
 
 ## Merge Sort
