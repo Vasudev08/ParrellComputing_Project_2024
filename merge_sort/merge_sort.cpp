@@ -73,11 +73,43 @@ int main(int argc, char* argv[]) {
     adiak::value("group_num", 18);
 
     long n = atol(argv[1]);  // Total number of elements
-    //int* original_array = (int*)malloc(n * sizeof(int));
 
 
-    //int n = 1000000;  // Total number of elements (example: 1 million)
     std::vector<int> data(n);
+
+
+   //srand(time(NULL));
+
+    std::string input_type = argv[2];
+  
+        if (input_type[0] == 'r') { // Random
+            for (int c = 0; c < n; ++c) {
+                data[c] = rand() % n;
+            }
+        } else if (input_type[0] == 's') { // Sorted
+            for (int c = 0; c < n; ++c) {
+                data[c] = c;
+            }
+        } else if (input_type[0] == 'v') { // Reverse sorted
+            for (int c = 0; c < n; ++c) {
+                data[c] = n - c - 1;
+            }
+        } else if (input_type[0] == 'p') { // 1% Perturbed
+            for (int c = 0; c < n; ++c) {
+                data[c] = c;
+            }
+            // Introduce 1% perturbation
+            int num_perturbations = n / 100; // 1% of the array size
+            for (int i = 0; i < num_perturbations; ++i) {
+                int index = rand() % n;
+                data[index] = rand() % n; // Replace with random value
+            }
+        } else {
+            std::cout << "Invalid input type. Use 'sorted', 'random', 'reverse_sorted', or 'perturbed'.\n";
+            MPI_Finalize();
+            return 1;
+        }
+    
 
     // Master process initializes the data
     if (rank == 0) {
@@ -141,15 +173,11 @@ int main(int argc, char* argv[]) {
 
     }
 
-    // Collect metadata for the experiment
-    adiak::value("input_size", n);
+     adiak::value("input_size", n);
     adiak::value("num_procs", size);
-    adiak::value("data_type", "random");
+    adiak::value("data_type", input_type[0]);
     adiak::value("size_of_data_type", sizeof(int));
     adiak::value("scalability", "strong");
-
-    // MPI
-    //adiak::finalize();
     MPI_Finalize();
 
     return 0;
