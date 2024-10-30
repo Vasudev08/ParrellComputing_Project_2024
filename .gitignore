@@ -31,3 +31,4 @@ build/
 # Ignore generated logs and core dumps
 *.log
 core
+.DS_Store
