@@ -446,23 +446,49 @@ profile
 
 ## Bitonic Sort
 ### Strong Scaling
-![strong22](https://github.com/user-attachments/assets/0b5078c1-1e8d-43c5-8c4b-80a93628f969)
-![strong20](https://github.com/user-attachments/assets/73ccecf7-aff0-4340-aa49-544e5a8cd27a)
-![strong18](https://github.com/user-attachments/assets/7e38ab75-773c-4ac1-bf11-9db630a6802b)
-![strong16](https://github.com/user-attachments/assets/e9e5b9bd-37ae-496e-aea7-77d726fca6d3)
+#### Main
+![main_a28](https://github.com/user-attachments/assets/5b2cfc6a-05ee-4f76-8daa-994ba0b03b8c)
+![main_a26](https://github.com/user-attachments/assets/80bc0b59-2139-4b13-94f1-15270b5f0ddc)
+![main_a24](https://github.com/user-attachments/assets/e9f877ab-df88-4e45-870a-a5c9bde77697)
+![main_a22](https://github.com/user-attachments/assets/d212112f-75b2-4cf6-a326-1416b30f85c1)
+![main_a20](https://github.com/user-attachments/assets/9d8f0e29-f989-4d39-982f-2b7e9f7b64d8)
+![main_a18](https://github.com/user-attachments/assets/8e23e719-a4d6-412c-89b5-a8988ea6197c)
+![main_a16](https://github.com/user-attachments/assets/05c9331f-2862-4ce0-a745-2fe9726e235c)
 
+#### Comm
+![comm_a28](https://github.com/user-attachments/assets/b15df0f9-4982-4ad4-b3bc-b81f61ca397b)
+![comm_a26](https://github.com/user-attachments/assets/7e16bad9-664e-4a7d-8693-2896aae34dae)
+![comm_a24](https://github.com/user-attachments/assets/aa8dfe93-d7b6-4e99-adae-1e2dc81abeb3)
+![comm_a22](https://github.com/user-attachments/assets/0832eaf9-d471-4033-a51f-30fc270f8172)
+![comm_a20](https://github.com/user-attachments/assets/f5578ad4-5b34-4591-abca-4c111bf27ac5)
+![comm_a18](https://github.com/user-attachments/assets/61f37c15-2855-41b9-974a-0f80d217615b)
+![comm_a16](https://github.com/user-attachments/assets/4ba9d325-f8eb-4f2c-ab6d-88b656c8081d)
+
+#### Comp Large
+![comp_a28](https://github.com/user-attachments/assets/59b71c69-2023-404c-a556-e245dba677fa)
+![comp_a26](https://github.com/user-attachments/assets/452b15b3-5061-4eee-be03-e0e48ab3f749)
+![comp_a24](https://github.com/user-attachments/assets/b71230ac-3feb-41c0-8aec-0522996e53fa)
+![comp_a22](https://github.com/user-attachments/assets/09fc0357-914c-49a3-90b0-c989a225e8fa)
+![comp_a20](https://github.com/user-attachments/assets/1ff06fcf-b1c0-4c27-ae0b-bbe2b9eba29a)
+![comp_a18](https://github.com/user-attachments/assets/d44ee59c-d259-41dc-91b3-38d197d1e27f)
+![comp_a16](https://github.com/user-attachments/assets/40212fb9-e48f-44e0-8509-0248cc89b106)
 
 ### Strong Speed-Up
-![sortedstrongspeedup](https://github.com/user-attachments/assets/d221e2c6-91db-47f3-9dbe-42528bcc10e1)
-![reversestrongspeedup](https://github.com/user-attachments/assets/a68138f4-f740-4b9c-a84e-6c696a22ee1a)
-![randomstrongspeedup](https://github.com/user-attachments/assets/b083756f-58cf-4011-bb88-db18b76eea7f)
+![sorted](https://github.com/user-attachments/assets/f48b7fbe-05ad-41fc-9d54-b2ea4d1f0374)
+![reverse](https://github.com/user-attachments/assets/0d5c0a6e-b30c-47d7-9956-45525b41161f)
+![random](https://github.com/user-attachments/assets/a9c39c8b-d020-4d14-b9bb-d87d1aaeb2ce)
+![perturbed](https://github.com/user-attachments/assets/71c76849-9baf-4487-822f-3dd3b11910ea)
 
 ### Weak Scaling
-N/A
+![main_sorted](https://github.com/user-attachments/assets/a1458da2-18d2-4e0e-9dbf-bbaa39137c72)
+![main_reverse](https://github.com/user-attachments/assets/e6ee400e-fcd9-4f2e-bf83-6ccbee8d3ab9)
+![main_random](https://github.com/user-attachments/assets/9ebce101-af6f-4393-a88a-196e1ef7f5d7)
+![main_perturbed](https://github.com/user-attachments/assets/1cbed48f-2766-4a86-8b05-b2d6ed66c501)
+
 
 ## Merge Sort
 
-###Weak Scaling
+### Weak Scaling
 ![weak_scaling_main_data_type_p](https://github.com/user-attachments/assets/5f8d344e-db31-491e-9fc2-ef488d11b4aa)
 
 This plot demonstrates the weak scaling behavior of the communication phase for data type "p" as the number of processes increases. The average time per chunk generally increases with the number of processes, which is expected in weak scaling scenarios where the workload per process remains constant as the system size grows.
