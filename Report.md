@@ -85,16 +85,29 @@ Parallel Merge Sort uses the divide and conquer technique, recursively dividing 
 #### 2b.4 Radix Sort
 Radix Sort is an algorithm that sorts by processing through individual digits, sorting along the way. The process can be sped up by allowing each processor to handle a portion of the total array. By sorting a subarray and keeping note of the order of subarray chunks being sorted in each processor, they can be placed accordingly back into the main array. While this example sorts via binary, the process can account for numbers of any base as long as the # of arrays corresponds correctly.
 
-1. Initialize MPI for multiprocessor communication
-2. Convert array digits into binary (helps with initial implementation).
-3. Find the maximum element and its # of digits.
-5. Begin iterating through digits starting at the least significant digit up to the maximum digit significance.
-7. Split the array into subarrays depending on the # of processors used and send to workers,
-   keeping track of the order in which each subarray gets sent where.
-9. Each worker will sort its subarray into 2 arrays, the first with digits that are 0, the second with digits that are 1.
-10. Worker returns arrays and master combines the 0 array in order of worker process, then repeats for the 1 array.
-11. Repeat with the next digit until all digits places have been parsed.
-12. End MPI once complete.
+   Pseudocode:
+   1. Initialize MPI for multiprocessor communication
+   2. Convert array digits into binary (helps with initial implementation).
+   3. Find the maximum element and its # of digits.
+   5. Begin iterating through digits starting at the least significant digit up to the maximum digit significance.
+   7. Split the array into subarrays depending on the # of processors used and send to workers,
+      keeping track of the order in which each subarray gets sent where.
+   9. Each worker will sort its subarray into 2 arrays, the first with digits that are 0, the second with digits that are 1.
+   10. Worker returns arrays and master combines the 0 array in order of worker process, then repeats for the 1 array.
+   11. Repeat with the next digit until all digits places have been parsed.
+   12. End MPI once complete.
+
+   Coded Algorithm (Differs from pseudocode as this version more optimally parallelizes Radix Sort):
+   1. Initializes MPI environment with MPI_Init(), MPI_Comm_size(), and MPI_Comm_rank().
+   2. Master process at rank 0 creates array based on command line arguments.
+   3. Total array size is broadcasted to all processes with MPI_Bcast().
+   4. Total array is split into subarrays based on # of processers and distributed amongst the processors with MPI_Scatter().
+   5. Each process finds the maximum value of its subarray in base 2 as well as the amount of digits it has.
+   6. Each process sorts its subarray by digit group in countSort(). A histogram counts the occurances of each digit group in the subarray. Using the histogram and summations, it sorts the local subarray and redistributes the info to the rest of the processes.
+   7. Arrays are gathered together, exchanging information and parts of subarrays to globally sort the total array.
+   8. Using MPI_Gatherv() All subarrays are collected in the master.
+   9. The total array is checked if it is sorted and prints the result.
+   10. Memory is deallocated and MPI_Finalize() ends the MPI environment.
    
 ### 2c. Evaluation plan - what and how will you measure and compare
 
@@ -105,151 +118,455 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 - Communication strategies (collectives vs point-to-point, measure runtime differences between code for each communication strategy)
 
 
-### 3a. Caliper instrumentation
-Please use the caliper build `/scratch/group/csce435-f24/Caliper/caliper/share/cmake/caliper` 
-(same as lab2 build.sh) to collect caliper files for each experiment you run.
+### 3a. Caliper 
 
-Your Caliper annotations should result in the following calltree
-(use `Thicket.tree()` to see the calltree):
+#### Merge Sort Calltree
 ```
-main
-|_ data_init_X      # X = runtime OR io
-|_ comm
-|    |_ comm_small
-|    |_ comm_large
-|_ comp
-|    |_ comp_small
-|    |_ comp_large
-|_ correctness_check
+0.504 main
+├─ 0.000 MPI_Init
+├─ 0.003 MPI_Bcast
+├─ 0.000 comm
+│  ├─ 0.000 MPI_Scatter
+│  └─ 0.000 comm_large
+│     └─ 0.000 MPI_Gather
+├─ 0.000 comp
+│  └─ 0.000 comp_large
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.000 MPI_Comm_dup
+```
+#### Sample Sort Calltree
+```
+0.271 main
+├─ 0.000 data_init_runtime
+├─ 0.267 MPI_Init
+│  └─ 0.000 MPI_Init
+├─ 0.003 comm
+│  ├─ 0.001 comm_scatter
+│  │  └─ 0.000 MPI_Scatter
+│  ├─ 0.000 comm_gather_samples
+│  │  └─ 0.000 MPI_Gather
+│  ├─ 0.001 comm_bcast_pivots
+│  │  └─ 0.001 MPI_Bcast
+│  ├─ 0.001 comm_all_to_all
+│  │  └─ 0.001 MPI_Alltoall
+│  ├─ 0.000 comm_alltoallv
+│  │  └─ 0.000 MPI_Alltoallv
+│  └─ 0.000 final_gather
+│     └─ 0.000 MPI_Gatherv
+├─ 0.000 comp
+│  ├─ 0.000 local_sort
+│  ├─ 0.000 pivot_sort
+│  ├─ 0.000 pivot_partition
+│  └─ 0.000 merge_elements
+├─ 0.000 MPI_Barrier
+├─ 0.000 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.001 MPI_Comm_dup
+
+```
+#### Radix Sort Calltree
+```
+2.722 main
+├─ 0.000 MPI_Init
+├─ 0.051 data_init_runtime
+├─ 0.852 comm
+│  ├─ 0.825 comm_large
+│  │  ├─ 0.087 MPI_Bcast
+│  │  ├─ 0.055 MPI_Allgather
+│  │  └─ 0.680 MPI_Gatherv
+│  └─ 0.024 comm_small
+│     ├─ 0.013 MPI_Scatter
+│     ├─ 0.001 MPI_Gather
+│     ├─ 0.006 MPI_Bcast
+│     └─ 0.003 MPI_Gatherv
+├─ 0.045 comp
+│  ├─ 0.000 comp_small
+│  └─ 0.044 comp_large
+├─ 0.087 MPI_Barrier
+├─ 0.049 correctness_check
+├─ 0.000 MPI_Finalize
+├─ 0.000 MPI_Initialized
+├─ 0.000 MPI_Finalized
+└─ 0.004 MPI_Comm_dup
 ```
 
-Required region annotations:
-- `main` - top-level main function.
-    - `data_init_X` - the function where input data is generated or read in from file. Use *data_init_runtime* if you are generating the data during the program, and *data_init_io* if you are reading the data from a file.
-    - `correctness_check` - function for checking the correctness of the algorithm output (e.g., checking if the resulting data is sorted).
-    - `comm` - All communication-related functions in your algorithm should be nested under the `comm` region.
-      - Inside the `comm` region, you should create regions to indicate how much data you are communicating (i.e., `comm_small` if you are sending or broadcasting a few values, `comm_large` if you are sending all of your local values).
-      - Notice that auxillary functions like MPI_init are not under here.
-    - `comp` - All computation functions within your algorithm should be nested under the `comp` region.
-      - Inside the `comp` region, you should create regions to indicate how much data you are computing on (i.e., `comp_small` if you are sorting a few values like the splitters, `comp_large` if you are sorting values in the array).
-      - Notice that auxillary functions like data_init are not under here.
-    - `MPI_X` - You will also see MPI regions in the calltree if using the appropriate MPI profiling configuration (see **Builds/**). Examples shown below.
+#### Bitonic Sort Calltree
 
-All functions will be called from `main` and most will be grouped under either `comm` or `comp` regions, representing communication and computation, respectively. You should be timing as many significant functions in your code as possible. **Do not** time print statements or other insignificant operations that may skew the performance measurements.
-
-### **Nesting Code Regions Example** - all computation code regions should be nested in the "comp" parent code region as following:
 ```
-CALI_MARK_BEGIN("comp");
-CALI_MARK_BEGIN("comp_small");
-sort_pivots(pivot_arr);
-CALI_MARK_END("comp_small");
-CALI_MARK_END("comp");
-
-# Other non-computation code
-...
-
-CALI_MARK_BEGIN("comp");
-CALI_MARK_BEGIN("comp_large");
-sort_values(arr);
-CALI_MARK_END("comp_large");
-CALI_MARK_END("comp");
-```
-
-### **Calltree Example**:
-```
-# MPI Mergesort
-4.695 main
-├─ 0.001 MPI_Comm_dup
+4.972 main
+├─ 0.000 MPI_Init
+└─ 2.803 comp
+   └─ 2.803 comp_large
+├─ 2.169 comm
+│  └─ 2.169 comm_large
+│     ├─ 2.163 MPI_Scatter 
+│     └─ 0.007 MPI_Gather
+├─ 0.000 correctness_check
+├─ 0.000 MPI_Init
 ├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Finalized
-├─ 0.000 MPI_Init
 ├─ 0.000 MPI_Initialized
-├─ 2.599 comm
-│  ├─ 2.572 MPI_Barrier
-│  └─ 0.027 comm_large
-│     ├─ 0.011 MPI_Gather
-│     └─ 0.016 MPI_Scatter
-├─ 0.910 comp
-│  └─ 0.909 comp_large
-├─ 0.201 data_init_runtime
-└─ 0.440 correctness_check
+└─ 24.052 MPI_Comm_dup
 ```
+
+
+
+
 
 ### 3b. Collect Metadata
 
-Have the following code in your programs to collect metadata:
+#### Merge Sort Metadata
 ```
-adiak::init(NULL);
-adiak::launchdate();    // launch date of the job
-adiak::libraries();     // Libraries used
-adiak::cmdline();       // Command line used to launch the job
-adiak::clustername();   // Name of the cluster
-adiak::value("algorithm", algorithm); // The name of the algorithm you are using (e.g., "merge", "bitonic")
-adiak::value("programming_model", programming_model); // e.g. "mpi"
-adiak::value("data_type", data_type); // The datatype of input elements (e.g., double, int, float)
-adiak::value("size_of_data_type", size_of_data_type); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
-adiak::value("input_size", input_size); // The number of elements in input dataset (1000)
-adiak::value("input_type", input_type); // For sorting, this would be choices: ("Sorted", "ReverseSorted", "Random", "1_perc_perturbed")
-adiak::value("num_procs", num_procs); // The number of processors (MPI ranks)
-adiak::value("scalability", scalability); // The scalability of your algorithm. choices: ("strong", "weak")
-adiak::value("group_num", group_number); // The number of your group (integer, e.g., 1, 10)
-adiak::value("implementation_source", implementation_source); // Where you got the source code of your algorithm. choices: ("online", "ai", "handwritten").
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance algorithm  \
+profile                                                                         
+3133824840              true                true               true     merge   
+
+           programming_model  group_num  input_size  num_procs data_type  \
+profile                                                                    
+3133824840               mpi         18         128          2    random   
+
+            size_of_data_type scalability  
+profile                                    
+3133824840                  4      strong
 ```
 
-They will show up in the `Thicket.metadata` if the caliper file is read into Thicket.
+#### Sample Sort Metadata
+```
+   cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
 
-### **See the `Builds/` directory to find the correct Caliper configurations to get the performance metrics.** They will show up in the `Thicket.dataframe` when the Caliper file is read into Thicket.
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
+
+              algorithm programming_model  group_num  input_size  num_procs  \
+profile                                                                       
+3133824840  Sample Sort               mpi         18         128          2   
+
+           data_type  size_of_data_type scalability  
+profile                                              
+3133824840    random                  4      strong  
+
+```
+
+#### Radix Sort Metadata
+```
+           cali.caliper.version  mpi.world.size  \
+profile                                           
+3133824840               2.11.0               2   
+
+                                                 spot.metrics  \
+profile                                                         
+3133824840  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+3133824840                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+3133824840  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+3133824840         spot            true  p2-a128.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+3133824840              true                true               true   
+
+            launchdate                                          libraries  \
+profile                                                                     
+3133824840  1729137630  [/scratch/group/csce435-f24/Caliper/caliper/li...   
+
+                                cmdline cluster algorithm programming_model  \
+profile                                                                       
+3133824840  [./radix_sort, --size, 128]       c     radix               mpi   
+
+           data_type  size_of_data_type  input_size input_type  num_procs  \
+profile                                                                     
+3133824840       int                  4         128     Random          2   
+
+           scalability  group_num implementation_source  
+profile                                                  
+3133824840      strong         18                online  
+```
+
+#### Bitonic Sort Metadata
+```
+cali.caliper.version  mpi.world.size  \
+profile                                           
+1981606483               2.11.0              16   
+
+                                                 spot.metrics  \
+profile                                                         
+1981606483  min#inclusive#sum#time.duration,max#inclusive#...   
+
+           spot.timeseries.metrics  spot.format.version  \
+profile                                                   
+1981606483                                            2   
+
+                                                 spot.options  spot.channels  \
+profile                                                                        
+1981606483  time.variance,profile.mpi,node.order,region.co...  regionprofile   
+
+           cali.channel spot:node.order   spot:output spot:profile.mpi  \
+profile                                                                  
+1981606483         spot            true  p16-a16.cali             true   
+
+           spot:region.count spot:time.exclusive spot:time.variance  \
+profile                                                               
+1981606483              true                true               true   
+
+            launchdate                                          libraries  \
+...
+
+           scalability  group_num implementation_source  
+profile
+1981606483      weak          1           online  
+```                                        
+
 ## 4. Performance evaluation
 
-Include detailed analysis of computation performance, communication performance. 
-Include figures and explanation of your analysis.
+## 4a. Bitonic Sort
+### Strong Scaling
+#### Main
+![main_a28](https://github.com/user-attachments/assets/5b2cfc6a-05ee-4f76-8daa-994ba0b03b8c)
+![main_a26](https://github.com/user-attachments/assets/80bc0b59-2139-4b13-94f1-15270b5f0ddc)
+![main_a24](https://github.com/user-attachments/assets/e9f877ab-df88-4e45-870a-a5c9bde77697)
+![main_a22](https://github.com/user-attachments/assets/d212112f-75b2-4cf6-a326-1416b30f85c1)
+![main_a20](https://github.com/user-attachments/assets/9d8f0e29-f989-4d39-982f-2b7e9f7b64d8)
+![main_a18](https://github.com/user-attachments/assets/8e23e719-a4d6-412c-89b5-a8988ea6197c)
+![main_a16](https://github.com/user-attachments/assets/05c9331f-2862-4ce0-a745-2fe9726e235c)
 
-### 4a. Vary the following parameters
-For input_size's:
-- 2^16, 2^18, 2^20, 2^22, 2^24, 2^26, 2^28
+#### Comm
+![comm_a28](https://github.com/user-attachments/assets/b15df0f9-4982-4ad4-b3bc-b81f61ca397b)
+![comm_a26](https://github.com/user-attachments/assets/7e16bad9-664e-4a7d-8693-2896aae34dae)
+![comm_a24](https://github.com/user-attachments/assets/aa8dfe93-d7b6-4e99-adae-1e2dc81abeb3)
+![comm_a22](https://github.com/user-attachments/assets/0832eaf9-d471-4033-a51f-30fc270f8172)
+![comm_a20](https://github.com/user-attachments/assets/f5578ad4-5b34-4591-abca-4c111bf27ac5)
+![comm_a18](https://github.com/user-attachments/assets/61f37c15-2855-41b9-974a-0f80d217615b)
+![comm_a16](https://github.com/user-attachments/assets/4ba9d325-f8eb-4f2c-ab6d-88b656c8081d)
 
-For input_type's:
-- Sorted, Random, Reverse sorted, 1%perturbed
+#### Comp Large
+![comp_a28](https://github.com/user-attachments/assets/59b71c69-2023-404c-a556-e245dba677fa)
+![comp_a26](https://github.com/user-attachments/assets/452b15b3-5061-4eee-be03-e0e48ab3f749)
+![comp_a24](https://github.com/user-attachments/assets/b71230ac-3feb-41c0-8aec-0522996e53fa)
+![comp_a22](https://github.com/user-attachments/assets/09fc0357-914c-49a3-90b0-c989a225e8fa)
+![comp_a20](https://github.com/user-attachments/assets/1ff06fcf-b1c0-4c27-ae0b-bbe2b9eba29a)
+![comp_a18](https://github.com/user-attachments/assets/d44ee59c-d259-41dc-91b3-38d197d1e27f)
+![comp_a16](https://github.com/user-attachments/assets/40212fb9-e48f-44e0-8509-0248cc89b106)
 
-MPI: num_procs:
-- 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024
-
-This should result in 4x7x10=280 Caliper files for your MPI experiments.
-
-### 4b. Hints for performance analysis
-
-To automate running a set of experiments, parameterize your program.
-
-- input_type: "Sorted" could generate a sorted input to pass into your algorithms
-- algorithm: You can have a switch statement that calls the different algorithms and sets the Adiak variables accordingly
-- num_procs: How many MPI ranks you are using
-
-When your program works with these parameters, you can write a shell script 
-that will run a for loop over the parameters above (e.g., on 64 processors, 
-perform runs that invoke algorithm2 for Sorted, ReverseSorted, and Random data).  
-
-### 4c. You should measure the following performance metrics
-- `Time`
-    - Min time/rank
-    - Max time/rank
-    - Avg time/rank
-    - Total time
-    - Variance time/rank
+Analysis:
+The strong scaling plots show how the execution time decreases as the number of processors increases while keeping the problem size constant for sizes 2^16 through 2^28. Ideally, the execution time should decrease proportionally with the increase in the number of processors. With these plots, the strong scaling curve shows diminishing returns as more processors are added. This is due to overhead from inter-processor communication, synchronization, and non-parallelizable portions of the algorithm (as per Amdahl's law). It is worth noting that the time reduces much more linearly with large problem sizes, meaning that parallelization is more effective and has more returns with a larger problem size. For larger problem sizes, the actual computational work increases significantly, and the overhead becomes a smaller fraction of the total work. The efficiency of parallelization improves with larger problem sizes, because the computational gains outweigh the overhead.
+Another observation is that the communication time is overall much higher for random inputs than for the other types of inputs (as seen in the Comm plots). This could be because random inputs generally result in more frequent and scattered data transfers between processors, which increases the need for synchronization. Each time processors exchange data, they must often wait for each other to complete their communication before proceeding to the next step. This synchronization could introduce delays, especially when communication patterns are irregular and unpredictable, as with random data.
+For the comp_large graphs, it is clear that the times decreased linearly consistently with the increase in the number of processes. The underlying bitonic algorithm used for comp_large scales well with the number of processes. The computational workload increases enough to offset the overhead of managing multiple processes, as with comp_large, where the algorithm is designed to take full advantage of the parallel architecture, minimizing any bottlenecks that might otherwise prevent linear scaling.
 
 
-## 5. Presentation
-Plots for the presentation should be as follows:
-- For each implementation:
-    - For each of comp_large, comm, and main:
-        - Strong scaling plots for each input_size with lines for input_type (7 plots - 4 lines each)
-        - Strong scaling speedup plot for each input_type (4 plots)
-        - Weak scaling plots for each input_type (4 plots)
 
-Analyze these plots and choose a subset to present and explain in your presentation.
+### Strong Speed-Up
+#### Main
+![speedup_main_data_type_sorted](https://github.com/user-attachments/assets/fb8c8ab1-6796-4f48-9f3d-ff42fe545f20)
+![speedup_main_data_type_reverse_sorted](https://github.com/user-attachments/assets/9dc45687-90b1-497d-9933-09aa3d7d8b59)
+![speedup_main_data_type_random](https://github.com/user-attachments/assets/9983fd97-abbe-4c6e-96a5-8f808b4d618b)
+![speedup_main_data_type_perturbed](https://github.com/user-attachments/assets/58b9497d-f990-42ed-aa19-b64de0cfaa37)
 
-## 6. Final Report
-Submit a zip named `TeamX.zip` where `X` is your team number. The zip should contain the following files:
-- Algorithms: Directory of source code of your algorithms.
-- Data: All `.cali` files used to generate the plots seperated by algorithm/implementation.
-- Jupyter notebook: The Jupyter notebook(s) used to generate the plots for the report.
-- Report.md
+#### Comp 
+![speedup_comp_data_type_sorted](https://github.com/user-attachments/assets/0a3aa924-20d7-4b96-bc60-9b7d952f0194)
+![speedup_comp_data_type_reverse_sorted](https://github.com/user-attachments/assets/e622d296-1563-4ce6-9dcd-ed7c48c6d471)
+![speedup_comp_data_type_random](https://github.com/user-attachments/assets/f36be6e3-e5e9-41ef-a8b5-6384b2c54223)
+![speedup_comp_data_type_perturbed](https://github.com/user-attachments/assets/69d6ce7d-5fd7-4759-98a6-6cfd5d54603d)
+
+#### Comm
+![speedup_comm_data_type_sorted](https://github.com/user-attachments/assets/c9086eec-9a66-4dc1-86cb-57207a8b3b54)
+![speedup_comm_data_type_reverse_sorted](https://github.com/user-attachments/assets/90c502b7-989e-4ade-8ed8-ef0189204130)
+![speedup_comm_data_type_random](https://github.com/user-attachments/assets/deadf4ac-fb84-4490-a9f6-271cc6caa63a)
+![speedup_comm_data_type_perturbed](https://github.com/user-attachments/assets/1a8d28dd-f822-45a4-b725-b70dcd4c03e4)
+
+Analysis:
+It is clear from the plots that the speedup peaks at around 256 threads for all of the types of inputs and problem sizes, though it is the highest for the larger problem sizes. The decrease in speedup is likely due to growing communication overhead, as more processes require more data exchanges, and synchronization delays increase. Amdahl's Law plays a role by limiting the speedup as non-parallelizable parts of the algorithm, like merging and comparing, become bottlenecks. Load imbalances between processes, increased cache contention, and memory bandwidth issues could also further reduce efficiency. The communication overhead can start to dominate the benefits of parallelization, especially as the number of processes grows. Therefore, the speedup peaks at a certain number of processes before the overhead becomes too great. Up until then, the added parallelization with more proceses speeds up the time for the algorithm. 
+
+### Weak Scaling
+![main_sorted](https://github.com/user-attachments/assets/082250a3-0975-47ba-9521-4b5f2653a915)
+![main_reverse](https://github.com/user-attachments/assets/02b9a3ba-056e-4d72-8457-7ad1b604c6a0)
+![main_random](https://github.com/user-attachments/assets/235904a0-a223-4903-a7b8-414e39eed68a)
+![main_perturbed](https://github.com/user-attachments/assets/dd5fd8b5-be3e-4a0d-8de9-a2c6275cb4f0)
+
+
+Analysis:
+It is observed that the average time per rank increases for the smaller problem sizes and decreases for the larger problem sizes. For smaller problem sizes, the communication overhead becomes more significant compared to the actual computation each process has to perform. Bitonic sort involves frequent communication between processes, so smaller inputs don't have enough computational work to offset the communication time. As a result, the average time per rank increases because the overhead dominates the computation. But for larger problem sizes, the amount of computation per process increases significantly, which helps amortize the communication overhead. The processes spend more time on computation relative to communication, leading to a decrease in the average time per rank. In addition, with small inputs, adding more processes doesn’t fully utilize the available resources, meaning that some processes may remain idle or underused. The increased number of processes introduces unnecessary communication and synchronization overhead for small workloads, resulting in increased time per rank. For larger inputs, however, the workload scales with the number of processes, making each process more efficiently utilized, which lowers the average time per rank.
+
+### Overall Analysis
+Based on the resulting plots, the performance of the bitonic sort algorithm shows a balance between parallel efficiency and the inherent challenges of communication and synchronization. The algorithm benefits from parallelization, particularly with larger problem sizes, where computation dominates and overheads like communication are amortized, leading to near-linear reductions in execution time as the number of processes increases. This is shown in the consistent linear decrease in comp_large times, indicating that the algorithm scales well for large datasets.
+However, the algorithm has diminishing returns as more processes are added, especially with smaller problem sizes. This is because communication overhead and synchronization begin to dominate, as shown by the decreasing speedup with additional processes. Amdahl’s Law limits the potential speedup due to the non-parallelizable parts of the algorithm, such as merging and comparing, which require extensive communication between processes. Additionally, random inputs make communication overhead worse due to unpredictable data movement, while the other input types lead to more efficient execution due to more predictable data patterns.
+In weak scaling, the average time per rank initially increases for smaller problem sizes due to communication overhead, but decreases with larger problems as processes are more efficiently utilized. This indicates that while the bitonic sort algorithm can handle large-scale parallelism well, its performance is limited by communication costs and load imbalances at smaller scales.
+Overall, the parallelized bitonic sort algorithm performs well for large problem sizes with high computation-to-communication ratios but struggles with communication overhead and diminishing returns as the number of processes increases, especially for smaller inputs. 
+
+
+## 4b. Merge Sort
+
+### Weak Scaling
+![image](https://github.com/user-attachments/assets/6a09d57f-a6c9-4e8c-9c9b-21afb6f2511f)
+![image](https://github.com/user-attachments/assets/fc7438b2-9eb9-41b0-a830-3266ce39f0f5)
+![image](https://github.com/user-attachments/assets/9310cb5a-d70d-41a9-ae8a-2fd40248e573)
+
+The three graphs represent weak scaling performance for communication (Comm), computation (Comp), and the main workload, all using sorted input data. As the number of threads increases, the speedup generally declines across all categories, highlighting the impact of overhead on scaling efficiency. Communication is the most affected, with a steep drop in performance, indicating that the overhead associated with communication becomes increasingly limiting as more threads are added. In contrast, computation maintains a more gradual decline, suggesting it scales more effectively and is less sensitive to the increase in threads. The main workload, which combines both communication and computation, shows a balanced trend with an intermediary decline in speedup, reflecting the cumulative impact of both types of overhead. Overall, these graphs reveal that communication overhead poses the greatest challenge to weak scaling, while computation retains relatively better efficiency.
+
+### Speed Up
+![image](https://github.com/user-attachments/assets/8c8ef3c5-f698-44ec-ac6b-09e705fb8dd2)
+![image](https://github.com/user-attachments/assets/2ff53b68-59e6-443a-816d-c2e097f809a8)
+![image](https://github.com/user-attachments/assets/8343d32e-dc21-4dae-af05-6ea754183c88)
+
+
+The three graphs display speedup trends for weak scaling across different categories—communication (Comm), computation (Comp), and the main workload—with sorted data input. In the communication graph, speedup reaches a peak with a moderate number of threads but declines sharply as thread counts increase, suggesting significant communication overhead in handling larger thread numbers. The computation graph, however, shows a much higher peak speedup, especially for larger input sizes, indicating that computation benefits substantially from increased parallelism up to a certain point before diminishing returns set in. The main workload graph combines aspects of both communication and computation, exhibiting a moderate peak followed by a steady decline as threads increase. This mixed behavior reflects the balance between computation gains and communication costs, with the latter limiting overall efficiency at higher thread counts. Overall, while computation shows the highest scalability, communication becomes a bottleneck as thread count grows, impacting the main workload's speedup performance.
+
+### Strong Scaling
+![image](https://github.com/user-attachments/assets/11890515-7163-44c5-804b-796cd42a57c0)
+![image](https://github.com/user-attachments/assets/22388a47-fee2-4b61-ac6c-95eb9b144c21)
+![image](https://github.com/user-attachments/assets/517e8e3b-c7a0-419b-a039-095c6087137d)
+
+The three graphs show strong scaling performance across different components—main, communication (comm), and computation (comp)—for an input size of \(2^16\). In the main workload graph, the average time per rank steadily increases as the number of processes rises, indicating limited scalability and suggesting that adding more processes doesn’t significantly improve performance. In contrast, the communication graph initially shows a decline in average time per rank, but after reaching a minimum point, it rises sharply with more processes, indicating that communication overhead increases significantly, especially beyond \(2^5\) processes. This suggests that, in this setup, communication efficiency deteriorates with higher process counts. The computation graph presents the most favorable scaling, with a distinct U-shaped curve; time per rank decreases as processes increase until around \(2^6\), after which it begins to rise slightly. This indicates that computation benefits from parallelism up to a point, but further increases in processes lead to diminishing returns, possibly due to synchronization overhead or resource contention. Overall, these graphs highlight the limitations of strong scaling, especially for communication-heavy tasks, while computation retains better scalability.
+
+### Overal Analysis
+In my parallel implementation of Merge Sort, I observed that computation scaled efficiently up to a certain point, with the average time per rank decreasing as the number of processes increased, indicating effective load distribution. However, communication overhead became a limiting factor as the process count grew, significantly impacting performance and hindering scalability. This suggests that while the computational aspects of my implementation benefit from parallelism, further optimization of communication could enhance overall performance and scalability.
+
+## 4c. Sample Sort
+### Strong Scaling
+#### Main
+![main_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/81d3d415-d58d-4084-b318-d6706e5f1251)
+![main_$2^{26}$_strong_scaling (2)](https://github.com/user-attachments/assets/399e5ca1-e169-44c5-b185-9cf28ff97eba)
+
+In the above two plots we observe that when the sample size is small there's an increase in time to process the whole program, but when the sample size is large there's actually an decrease in the time when we increase the no. of processors. So, we see an better strong scaling for larger sample size.
+
+#### Comm
+![comm_$2^{16}$_strong_scaling (5)](https://github.com/user-attachments/assets/5dafc823-2b5f-4773-8faf-3b7ce5be4686)
+![comm_$2^{26}$_strong_scaling](https://github.com/user-attachments/assets/d341fe55-2e79-4a4a-8912-fc1a2299391f)
+
+We observe similar trend in our communication time, where when sample size is small we observe an increase in communication time but when sample size is large we observe an decrease in communication time when we increase the no. of processors. which says that parallelism helped our sample sort algorithm run efficiently and faster.
+
+#### Comp
+![comp_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/d6232b2a-ce85-4fd8-a0e6-5f6f0615d8a1)
+![comp_$2^{26}$_strong_scaling](https://github.com/user-attachments/assets/83f3b24d-c122-4d3e-be6d-b98805b8f55b)
+
+Regardless of our sample size, we observe an decrease in computation time when we increase the no. of processors which implies our sample sort scales.
+
+
+### Strong Speed-Up
+#### Main
+![speedup_plot_r_main](https://github.com/user-attachments/assets/e79bec09-1d20-4358-bb19-b36956ce06c1)
+
+We observe the strongest speed-up from larger sample size, particularly when our sample size was 2^26 the algo experienced drastic speed-up until 2^6 processor after which the speed-up decreased
+
+#### Comm
+![speedup_plot_r_comm](https://github.com/user-attachments/assets/cd38044f-d130-485a-baca-068aa5c52d77)
+
+We observe the strongest speed-up when our sample size is the largest while for smaller sample size we observe that the speed-up decreases as we increase the no. of processors.
+
+
+#### Comp
+![speedup_plot_r_comp](https://github.com/user-attachments/assets/b6d7e36e-2486-4871-a19d-ead1638400ad)
+
+Regardless of the sample size we observe strong speed-up as we increase the no. of processors.
+
+### Weak Scaling
+#### main
+![weak_scaling_main_random](https://github.com/user-attachments/assets/a3a03494-25fa-4646-86a3-6d6e78643bf3)
+
+#### Comm
+![weak_scaling_comm_random](https://github.com/user-attachments/assets/e4c404d9-d858-483b-80ea-891fd5ee3169)
+
+#### Comp
+![weak_scaling_comp_random](https://github.com/user-attachments/assets/64805672-e2e6-4ddf-a89b-e1b76e0211be)
+
+In all above plots we observe an decreasing trend when we increase both the no. of processor and sample.
+
+
+### Overall Analysis
+Our sample sort algo scales efficiently and is helped by the parallelism. which can be observed particularly well in our strong scaling plots where we observed decreasing computation time when we increase the no. of processor for all sample size. But the sample size did matter for both overall and communication time, where we observed that when sample size is small we don't get the benefits of parallelism but when our sample size is larger we observed improvement in both the overall and communciation time. 
+
+
+
+
+## 4d. Radix Sort
+### Strong Scaling
+
+![comm28](https://github.com/user-attachments/assets/6391444b-bdf8-4309-a21d-3b18f0d33d1a)
+
+![comp_large28](https://github.com/user-attachments/assets/5cd9f207-414e-4c82-b27a-23b8ed99232f)
+
+![main28](https://github.com/user-attachments/assets/2a4a73fa-b952-4ea3-bdb8-03add6cb438b)
+
+### Strong Scaling Speed-Up
+
+![speedup_comm_data_type_Random](https://github.com/user-attachments/assets/9a9cb0ab-1b80-4c79-83a4-bb23122ce131)
+
+![speedup_comp_data_type_Random](https://github.com/user-attachments/assets/4be80fec-2487-418b-9ad7-e6dc58348c03)
+
+![speedup_main_data_type_Random](https://github.com/user-attachments/assets/f84a8acb-a224-4292-83f9-dbf28eda93ad)
+
+### Weak Scaling 
+
+![comm_random](https://github.com/user-attachments/assets/62a91cfb-e647-45d1-839b-9d67c03cc6fe)
+
+![comp_random](https://github.com/user-attachments/assets/552d3051-ba82-4144-843d-ae9d8fa664f2)
+
+![main_random](https://github.com/user-attachments/assets/f63a8c5f-eb76-4431-bfbe-8b4d6ac2cd4a)
+
+
+### Analysis
+Radix Sort Overall Performance: The plots showed behaviors mostly in line with behaviors observed in previous labs when working with different input sizes and processor counts. This time however, there were different input types, and they mostly had impacts on communication. As input sizes increased, communication times often took longer. As processor counts increased, computation times often took less time. There were some kinks that could be worked out to improve the Caliper data, but this is mostly representative of the true data.
+
+Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users.
+
+
+## Comparing All Sorting Algoriths
+### Input Type: Main & Random
+![image](https://github.com/user-attachments/assets/b040c614-bb94-4c9e-9aa0-06e064e63b7e)
+![image](https://github.com/user-attachments/assets/d495185b-44cd-41a3-958e-0c593596e37a)
+![image](https://github.com/user-attachments/assets/25a6c8c8-c593-476f-a26c-c44895781a5b)
+![image](https://github.com/user-attachments/assets/10475f7d-c358-4572-a73e-e78381408db5)
+
+### Overal Analysis
+The graphs display the performance of Bitonic Sort, Radix Sort, Sample Sort, and Merge Sort across different processor counts for random input data sizes \(2^16\) and \(2^26\). In terms of total execution time, Bitonic Sort and Sample Sort show strong scalability with increasing processors, maintaining low execution times, while Merge Sort and Radix Sort see significant time increases, especially at larger input sizes. For speedup, Sample Sort exhibits the highest initial gains, particularly at \(2^26\), but its speedup declines as the number of processors increases, suggesting inefficiency at higher scales. Bitonic Sort also achieves moderate speedup, though with a less dramatic initial peak. Both Radix Sort and Merge Sort have minimal speedup gains, indicating limited scalability in a parallel setting for this random input type. Overall, Bitonic and Sample Sort perform more efficiently in parallel on random data, while Radix and Merge Sort struggle to benefit from added processors, particularly with larger inputs, showing limitations in their parallel scalability.
