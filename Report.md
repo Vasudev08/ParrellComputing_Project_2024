@@ -171,29 +171,28 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 ```
 #### Radix Sort Calltree
 ```
-0.396 main
+2.722 main
 ├─ 0.000 MPI_Init
-├─ 0.000 data_init_runtime
-├─ 0.004 comm
-│  ├─ 0.003 comm_large
-│  │  └─ 0.003 MPI_Bcast
-│  └─ 0.001 comm_small
-│     ├─ 0.000 MPI_Scatter
-│     ├─ 0.000 MPI_Gather
-│     └─ 0.000 MPI_Gatherv
-├─ 0.003 comp
+├─ 0.051 data_init_runtime
+├─ 0.852 comm
+│  ├─ 0.825 comm_large
+│  │  ├─ 0.087 MPI_Bcast
+│  │  ├─ 0.055 MPI_Allgather
+│  │  └─ 0.680 MPI_Gatherv
+│  └─ 0.024 comm_small
+│     ├─ 0.013 MPI_Scatter
+│     ├─ 0.001 MPI_Gather
+│     ├─ 0.006 MPI_Bcast
+│     └─ 0.003 MPI_Gatherv
+├─ 0.045 comp
 │  ├─ 0.000 comp_small
-│  │  ├─ 0.000 MPI_Gather
-│  │  └─ 0.000 MPI_Bcast
-│  └─ 0.003 comp_large
-│     ├─ 0.001 MPI_Allgather
-│     └─ 0.001 MPI_Gatherv
-├─ 0.000 MPI_Barrier
-├─ 0.000 correctness_check
+│  └─ 0.044 comp_large
+├─ 0.087 MPI_Barrier
+├─ 0.049 correctness_check
 ├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Initialized
 ├─ 0.000 MPI_Finalized
-└─ 0.002 MPI_Comm_dup
+└─ 0.004 MPI_Comm_dup
 ```
 
 #### Bitonic Sort Calltree
