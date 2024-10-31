@@ -371,7 +371,7 @@ profile
 
 ## 4. Performance evaluation
 
-## Bitonic Sort
+## 4a. Bitonic Sort
 ### Strong Scaling
 #### Main
 ![main_a28](https://github.com/user-attachments/assets/5b2cfc6a-05ee-4f76-8daa-994ba0b03b8c)
@@ -433,7 +433,7 @@ In weak scaling, the average time per rank initially increases for smaller probl
 Overall, the parallelized bitonic sort algorithm performs well for large problem sizes with high computation-to-communication ratios but struggles with communication overhead and diminishing returns as the number of processes increases, especially for smaller inputs. 
 
 
-## Merge Sort
+## 4b. Merge Sort
 
 ### Weak Scaling
 ![image](https://github.com/user-attachments/assets/6a09d57f-a6c9-4e8c-9c9b-21afb6f2511f)
@@ -460,7 +460,7 @@ The three graphs show strong scaling performance across different components—m
 ### Overal Analysis
 In my parallel implementation of Merge Sort, I observed that computation scaled efficiently up to a certain point, with the average time per rank decreasing as the number of processes increased, indicating effective load distribution. However, communication overhead became a limiting factor as the process count grew, significantly impacting performance and hindering scalability. This suggests that while the computational aspects of my implementation benefit from parallelism, further optimization of communication could enhance overall performance and scalability.
 
-## Sample Sort
+## 4c. Sample Sort
 ### Strong Scaling
 #### Main
 ![main_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/81d3d415-d58d-4084-b318-d6706e5f1251)
@@ -498,9 +498,6 @@ We observe the strongest speed-up when our sample size is the largest while for 
 
 Regardless of the sample size we observe strong speed-up as we increase the no. of processors.
 
-
-
-
 ### Weak Scaling
 #### main
 ![weak_scaling_main_random](https://github.com/user-attachments/assets/a3a03494-25fa-4646-86a3-6d6e78643bf3)
@@ -520,7 +517,7 @@ Our sample sort algo scales efficiently and is helped by the parallelism. which 
 
 
 
-## Radix Sort
+## 4d. Radix Sort
 ### Strong Scaling
 
 ![commStrong28](https://github.com/user-attachments/assets/b23715aa-37af-419e-8595-8f381e238e5f)
