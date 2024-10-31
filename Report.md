@@ -436,7 +436,8 @@ Overall, the parallelized bitonic sort algorithm performs well for large problem
 ## Merge Sort
 
 ### Weak Scaling
-![image](https://github.com/user-attachments/assets/2a492ccd-0d8c-476a-bbaa-75b79e67c486)
+![image](https://github.com/user-attachments/assets/600daccf-591a-4673-9976-ae63f9f5731a)
+
 
 This plot demonstrates the weak scaling behavior of the communication phase for data type "p" as the number of processes increases. The average time per chunk generally increases with the number of processes, which is expected in weak scaling scenarios where the workload per process remains constant as the system size grows.
 
