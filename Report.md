@@ -472,7 +472,7 @@ We observe similar trend in our communication time, where when sample size is sm
 ![comp_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/d6232b2a-ce85-4fd8-a0e6-5f6f0615d8a1)
 ![comp_$2^{26}$_strong_scaling](https://github.com/user-attachments/assets/83f3b24d-c122-4d3e-be6d-b98805b8f55b)
 
-regardless of our sample size, we observe an decrease in computation time when we increase the no. of processors which implies our sample sort scales.
+Regardless of our sample size, we observe an decrease in computation time when we increase the no. of processors which implies our sample sort scales.
 
 
 
@@ -484,7 +484,22 @@ regardless of our sample size, we observe an decrease in computation time when w
 
 
 ### Strong Speed-Up
-![main_s_strong_speeduP](https://github.com/user-attachments/assets/bd9f9dc3-a82c-4e1e-9ea6-80297ddb0076)
+#### Main
+![speedup_plot_r_main](https://github.com/user-attachments/assets/e79bec09-1d20-4358-bb19-b36956ce06c1)
+
+We observe the strongest speed-up from larger sample size, particularly when our sample size was 2^26 the algo experienced drastic speed-up until 2^6 processor after which the speed-up decreased
+
+#### Comm
+![speedup_plot_r_comm](https://github.com/user-attachments/assets/cd38044f-d130-485a-baca-068aa5c52d77)
+
+We observe the strongest speed-up when our sample size is the largest while for smaller sample size we observe that the speed-up decreases as we increase the no. of processors.
+
+
+#### Comp
+![speedup_plot_r_comp](https://github.com/user-attachments/assets/b6d7e36e-2486-4871-a19d-ead1638400ad)
+Regardless of the sample size we observe strong speed-up as we increase the no. of processors.
+
+
 
 
 ### Weak Scaling
