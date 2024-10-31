@@ -456,9 +456,28 @@ This plot shows the main task's strong scaling behavior for an input size of \(2
 
 ## Sample Sort
 ### Strong Scaling
+#### Main
 ![main_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/81d3d415-d58d-4084-b318-d6706e5f1251)
 ![main_$2^{26}$_strong_scaling (2)](https://github.com/user-attachments/assets/399e5ca1-e169-44c5-b185-9cf28ff97eba)
+
 In the above two plots we observe that when the sample size is small there's an increase in time to process the whole program, but when the sample size is large there's actually an decrease in the time when we increase the no. of processors. So, we see an better strong scaling for larger sample size.
+
+#### Comm
+![comm_$2^{16}$_strong_scaling (5)](https://github.com/user-attachments/assets/5dafc823-2b5f-4773-8faf-3b7ce5be4686)
+![comm_$2^{26}$_strong_scaling](https://github.com/user-attachments/assets/d341fe55-2e79-4a4a-8912-fc1a2299391f)
+
+We observe similar trend in our communication time, where when sample size is small we observe an increase in communication time but when sample size is large we observe an decrease in communication time when we increase the no. of processors. which says that parallelism helped our sample sort algorithm run efficiently and faster.
+
+#### Comp
+![comp_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/d6232b2a-ce85-4fd8-a0e6-5f6f0615d8a1)
+![comp_$2^{26}$_strong_scaling](https://github.com/user-attachments/assets/83f3b24d-c122-4d3e-be6d-b98805b8f55b)
+
+regardless of our sample size, we observe an decrease in computation time when we increase the no. of processors which implies our sample sort scales.
+
+
+
+
+
 
 
 
