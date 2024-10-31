@@ -549,11 +549,11 @@ Notes: Due to the networking issues that many other students were facing, I was 
 
 
 ## Comparing All Sorting Algoriths
-## Input Type: Main & Random
+### Input Type: Main & Random
 ![image](https://github.com/user-attachments/assets/b040c614-bb94-4c9e-9aa0-06e064e63b7e)
 ![image](https://github.com/user-attachments/assets/d495185b-44cd-41a3-958e-0c593596e37a)
 ![image](https://github.com/user-attachments/assets/25a6c8c8-c593-476f-a26c-c44895781a5b)
 ![image](https://github.com/user-attachments/assets/10475f7d-c358-4572-a73e-e78381408db5)
 
-## Overal Analysis
+### Overal Analysis
 
