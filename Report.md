@@ -436,22 +436,26 @@ Overall, the parallelized bitonic sort algorithm performs well for large problem
 ## Merge Sort
 
 ### Weak Scaling
-![image](https://github.com/user-attachments/assets/600daccf-591a-4673-9976-ae63f9f5731a)
+![image](https://github.com/user-attachments/assets/6a09d57f-a6c9-4e8c-9c9b-21afb6f2511f)
+![image](https://github.com/user-attachments/assets/fc7438b2-9eb9-41b0-a830-3266ce39f0f5)
+![image](https://github.com/user-attachments/assets/9310cb5a-d70d-41a9-ae8a-2fd40248e573)
+
+The three graphs represent weak scaling performance for communication (Comm), computation (Comp), and the main workload, all using sorted input data. As the number of threads increases, the speedup generally declines across all categories, highlighting the impact of overhead on scaling efficiency. Communication is the most affected, with a steep drop in performance, indicating that the overhead associated with communication becomes increasingly limiting as more threads are added. In contrast, computation maintains a more gradual decline, suggesting it scales more effectively and is less sensitive to the increase in threads. The main workload, which combines both communication and computation, shows a balanced trend with an intermediary decline in speedup, reflecting the cumulative impact of both types of overhead. Overall, these graphs reveal that communication overhead poses the greatest challenge to weak scaling, while computation retains relatively better efficiency.
+
+### Speed Up
+![image](https://github.com/user-attachments/assets/8c8ef3c5-f698-44ec-ac6b-09e705fb8dd2)
+![image](https://github.com/user-attachments/assets/2ff53b68-59e6-443a-816d-c2e097f809a8)
+![image](https://github.com/user-attachments/assets/8343d32e-dc21-4dae-af05-6ea754183c88)
 
 
-This plot demonstrates the weak scaling behavior of the communication phase for data type "p" as the number of processes increases. The average time per chunk generally increases with the number of processes, which is expected in weak scaling scenarios where the workload per process remains constant as the system size grows.
-
-
-### Speed up
-![image](https://github.com/user-attachments/assets/51b11ae9-4f7b-4150-9aae-38cdac3e2dc7)
-
-The speedup plot for the communication phase shows an initial increase in performance as the number of processes scales up to 8, indicating effective parallelization. However, beyond 16 processes, the speedup fluctuates and drops off, reflecting diminishing returns due to communication overhead.
+The three graphs display speedup trends for weak scaling across different categories—communication (Comm), computation (Comp), and the main workload—with sorted data input. In the communication graph, speedup reaches a peak with a moderate number of threads but declines sharply as thread counts increase, suggesting significant communication overhead in handling larger thread numbers. The computation graph, however, shows a much higher peak speedup, especially for larger input sizes, indicating that computation benefits substantially from increased parallelism up to a certain point before diminishing returns set in. The main workload graph combines aspects of both communication and computation, exhibiting a moderate peak followed by a steady decline as threads increase. This mixed behavior reflects the balance between computation gains and communication costs, with the latter limiting overall efficiency at higher thread counts. Overall, while computation shows the highest scalability, communication becomes a bottleneck as thread count grows, impacting the main workload's speedup performance.
 
 ### Strong Scaling
-![strong_scaling_main_input_size_65536](https://github.com/user-attachments/assets/9f6af68b-a735-45a6-b824-d19f8814ba95)
+![image](https://github.com/user-attachments/assets/11890515-7163-44c5-804b-796cd42a57c0)
+![image](https://github.com/user-attachments/assets/22388a47-fee2-4b61-ac6c-95eb9b144c21)
+![image](https://github.com/user-attachments/assets/517e8e3b-c7a0-419b-a039-095c6087137d)
 
-This plot shows the main task's strong scaling behavior for an input size of \(2^{16}\) (65536), focusing on the average time per chunk as the number of processes increases. As the number of processes increases, the average time per chunk rises consistently, indicating that the overhead of managing more processes adds to the time complexity. This suggests that the main process becomes a bottleneck as more processes are introduced, likely due to the increased coordination and synchronization required.
-
+The three graphs show strong scaling performance across different components—main, communication (comm), and computation (comp)—for an input size of \(2^{16}\). In the main workload graph, the average time per rank steadily increases as the number of processes rises, indicating limited scalability and suggesting that adding more processes doesn’t significantly improve performance. In contrast, the communication graph initially shows a decline in average time per rank, but after reaching a minimum point, it rises sharply with more processes, indicating that communication overhead increases significantly, especially beyond \(2^5\) processes. This suggests that, in this setup, communication efficiency deteriorates with higher process counts. The computation graph presents the most favorable scaling, with a distinct U-shaped curve; time per rank decreases as processes increase until around \(2^6\), after which it begins to rise slightly. This indicates that computation benefits from parallelism up to a point, but further increases in processes lead to diminishing returns, possibly due to synchronization overhead or resource contention. Overall, these graphs highlight the limitations of strong scaling, especially for communication-heavy tasks, while computation retains better scalability.
 
 
 ## Sample Sort
