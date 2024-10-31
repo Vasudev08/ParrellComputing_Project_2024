@@ -495,6 +495,7 @@ We observe the strongest speed-up when our sample size is the largest while for 
 
 #### Comp
 ![speedup_plot_r_comp](https://github.com/user-attachments/assets/b6d7e36e-2486-4871-a19d-ead1638400ad)
+
 Regardless of the sample size we observe strong speed-up as we increase the no. of processors.
 
 
@@ -513,15 +514,8 @@ Regardless of the sample size we observe strong speed-up as we increase the no. 
 In all above plots we observe an decreasing trend when we increase both the no. of processor and sample.
 
 
-
-
-
-
-
-
-
-Sample sort overall performance: As we increase the no. of processors and length of our array, we see an increase in communication time due to the overhead to sync between all the processors, but we also observe an decrease in computation time as we increased the no. of processors. As we sample sort we could efficiently dvided our array into more no. of buckets which made the sorting easier.
-
+### Overall Analysis
+Our sample sort algo scales efficiently and is helped by the parallelism. which can be observed particularly well in our strong scaling plots where we observed decreasing computation time when we increase the no. of processor for all sample size. But the sample size did matter for both overall and communication time, where we observed that when sample size is small we don't get the benefits of parallelism but when our sample size is larger we observed improvement in both the overall and communciation time. 
 
 
 
