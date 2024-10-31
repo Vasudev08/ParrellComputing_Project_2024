@@ -481,14 +481,6 @@ We observe similar trend in our communication time, where when sample size is sm
 Regardless of our sample size, we observe an decrease in computation time when we increase the no. of processors which implies our sample sort scales.
 
 
-
-
-
-
-
-
-
-
 ### Strong Speed-Up
 #### Main
 ![speedup_plot_r_main](https://github.com/user-attachments/assets/e79bec09-1d20-4358-bb19-b36956ce06c1)
@@ -509,7 +501,22 @@ Regardless of the sample size we observe strong speed-up as we increase the no. 
 
 
 ### Weak Scaling
-![comm_s_weak_scaling](https://github.com/user-attachments/assets/00f6d1c2-0142-4c75-b4d1-31337fead692)
+#### main
+![weak_scaling_main_random](https://github.com/user-attachments/assets/a3a03494-25fa-4646-86a3-6d6e78643bf3)
+
+#### Comm
+![weak_scaling_comm_random](https://github.com/user-attachments/assets/e4c404d9-d858-483b-80ea-891fd5ee3169)
+
+#### Comp
+![weak_scaling_comp_random](https://github.com/user-attachments/assets/64805672-e2e6-4ddf-a89b-e1b76e0211be)
+
+In all above plots we observe an decreasing trend when we increase both the no. of processor and sample.
+
+
+
+
+
+
 
 
 
