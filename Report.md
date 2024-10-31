@@ -171,29 +171,28 @@ Radix Sort is an algorithm that sorts by processing through individual digits, s
 ```
 #### Radix Sort Calltree
 ```
-0.396 main
+2.722 main
 ├─ 0.000 MPI_Init
-├─ 0.000 data_init_runtime
-├─ 0.004 comm
-│  ├─ 0.003 comm_large
-│  │  └─ 0.003 MPI_Bcast
-│  └─ 0.001 comm_small
-│     ├─ 0.000 MPI_Scatter
-│     ├─ 0.000 MPI_Gather
-│     └─ 0.000 MPI_Gatherv
-├─ 0.003 comp
+├─ 0.051 data_init_runtime
+├─ 0.852 comm
+│  ├─ 0.825 comm_large
+│  │  ├─ 0.087 MPI_Bcast
+│  │  ├─ 0.055 MPI_Allgather
+│  │  └─ 0.680 MPI_Gatherv
+│  └─ 0.024 comm_small
+│     ├─ 0.013 MPI_Scatter
+│     ├─ 0.001 MPI_Gather
+│     ├─ 0.006 MPI_Bcast
+│     └─ 0.003 MPI_Gatherv
+├─ 0.045 comp
 │  ├─ 0.000 comp_small
-│  │  ├─ 0.000 MPI_Gather
-│  │  └─ 0.000 MPI_Bcast
-│  └─ 0.003 comp_large
-│     ├─ 0.001 MPI_Allgather
-│     └─ 0.001 MPI_Gatherv
-├─ 0.000 MPI_Barrier
-├─ 0.000 correctness_check
+│  └─ 0.044 comp_large
+├─ 0.087 MPI_Barrier
+├─ 0.049 correctness_check
 ├─ 0.000 MPI_Finalize
 ├─ 0.000 MPI_Initialized
 ├─ 0.000 MPI_Finalized
-└─ 0.002 MPI_Comm_dup
+└─ 0.004 MPI_Comm_dup
 ```
 
 #### Bitonic Sort Calltree
@@ -533,32 +532,33 @@ Our sample sort algo scales efficiently and is helped by the parallelism. which 
 ## 4d. Radix Sort
 ### Strong Scaling
 
-![commStrong28](https://github.com/user-attachments/assets/b23715aa-37af-419e-8595-8f381e238e5f)
+![comm28](https://github.com/user-attachments/assets/6391444b-bdf8-4309-a21d-3b18f0d33d1a)
 
-![compStrong28](https://github.com/user-attachments/assets/03ecc45c-686a-4eca-aebc-315e5a754198)
+![comp_large28](https://github.com/user-attachments/assets/5cd9f207-414e-4c82-b27a-23b8ed99232f)
 
-![mainStrong28](https://github.com/user-attachments/assets/72e2eb3c-5550-4d67-8f17-2e9a98319dcc)
+![main28](https://github.com/user-attachments/assets/2a4a73fa-b952-4ea3-bdb8-03add6cb438b)
 
 ### Strong Scaling Speed-Up
 
-![SSScomm](https://github.com/user-attachments/assets/ae4abff9-5309-411e-b146-511c2d87991c)
+![speedup_comm_data_type_Random](https://github.com/user-attachments/assets/9a9cb0ab-1b80-4c79-83a4-bb23122ce131)
 
-![SSScomp](https://github.com/user-attachments/assets/c336c1ea-e1e5-4061-85d5-b84c3210cda1)
+![speedup_comp_data_type_Random](https://github.com/user-attachments/assets/4be80fec-2487-418b-9ad7-e6dc58348c03)
 
-![SSSmain](https://github.com/user-attachments/assets/db9b5cef-03b6-4e52-b688-506d7dac2f34)
+![speedup_main_data_type_Random](https://github.com/user-attachments/assets/f84a8acb-a224-4292-83f9-dbf28eda93ad)
 
 ### Weak Scaling 
 
-![weakcomm](https://github.com/user-attachments/assets/1ab9c34e-894c-4684-b1f9-0a9f1374f78d)
+![comm_random](https://github.com/user-attachments/assets/62a91cfb-e647-45d1-839b-9d67c03cc6fe)
 
-![weakcomp](https://github.com/user-attachments/assets/6723023e-482e-43c6-8aec-f43a8206715e)
+![comp_random](https://github.com/user-attachments/assets/552d3051-ba82-4144-843d-ae9d8fa664f2)
 
-![weakmain](https://github.com/user-attachments/assets/b188979d-774c-4525-8533-73d2ba404b3c)
+![main_random](https://github.com/user-attachments/assets/f63a8c5f-eb76-4431-bfbe-8b4d6ac2cd4a)
+
 
 ### Analysis
 Radix Sort Overall Performance: The plots showed behaviors mostly in line with behaviors observed in previous labs when working with different input sizes and processor counts. This time however, there were different input types, and they mostly had impacts on communication. As input sizes increased, communication times often took longer. As processor counts increased, computation times often took less time. There were some kinks that could be worked out to improve the Caliper data, but this is mostly representative of the true data.
 
-Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users. There are some improvements that could be made to the code, however due to issues with the Grace scheduler, getting new data has been incredibly difficult. Issues with Jupyter and with local modules also made getting plots difficult.
+Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users.
 
 
 ## Comparing All Sorting Algoriths
