@@ -371,7 +371,7 @@ profile
 
 ## 4. Performance evaluation
 
-## 4a. Bitonic Sort
+## Bitonic Sort
 ### Strong Scaling
 #### Main
 ![main_a28](https://github.com/user-attachments/assets/5b2cfc6a-05ee-4f76-8daa-994ba0b03b8c)
