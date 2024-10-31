@@ -443,7 +443,7 @@ This plot demonstrates the weak scaling behavior of the communication phase for 
 
 
 ### Speed up
-![image](https://github.com/user-attachments/assets/423785bf-00e4-476f-ae05-eafe04083541)
+![image](https://github.com/user-attachments/assets/51b11ae9-4f7b-4150-9aae-38cdac3e2dc7)
 
 The speedup plot for the communication phase shows an initial increase in performance as the number of processes scales up to 8, indicating effective parallelization. However, beyond 16 processes, the speedup fluctuates and drops off, reflecting diminishing returns due to communication overhead.
 
