@@ -456,7 +456,13 @@ This plot shows the main task's strong scaling behavior for an input size of \(2
 
 ## Sample Sort
 ### Strong Scaling
-![comp_$2^{16}$_strong_scaling](https://github.com/user-attachments/assets/c843ddde-6da6-4d2c-8c18-edb2f1638cd3)
+![main_$2^{16}$_strong_scaling (3)](https://github.com/user-attachments/assets/81d3d415-d58d-4084-b318-d6706e5f1251)
+![main_$2^{26}$_strong_scaling (2)](https://github.com/user-attachments/assets/399e5ca1-e169-44c5-b185-9cf28ff97eba)
+In the above two plots we observe that when the sample size is small there's an increase in time to process the whole program, but when the sample size is large there's actually an decrease in the time when we increase the no. of processors. So, we see an better strong scaling for larger sample size.
+
+
+
+
 
 ### Strong Speed-Up
 ![main_s_strong_speeduP](https://github.com/user-attachments/assets/bd9f9dc3-a82c-4e1e-9ea6-80297ddb0076)
