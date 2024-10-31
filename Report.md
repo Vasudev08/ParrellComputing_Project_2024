@@ -408,20 +408,46 @@ For the comp_large graphs, it is clear that the times decreased linearly consist
 
 
 ### Strong Speed-Up
-![sorted](https://github.com/user-attachments/assets/f48b7fbe-05ad-41fc-9d54-b2ea4d1f0374)
-![reverse](https://github.com/user-attachments/assets/0d5c0a6e-b30c-47d7-9956-45525b41161f)
-![random](https://github.com/user-attachments/assets/a9c39c8b-d020-4d14-b9bb-d87d1aaeb2ce)
-![perturbed](https://github.com/user-attachments/assets/71c76849-9baf-4487-822f-3dd3b11910ea)
+#### Main
+![speedup_main_data_type_sorted](https://github.com/user-attachments/assets/fb8c8ab1-6796-4f48-9f3d-ff42fe545f20)
+![speedup_main_data_type_reverse_sorted](https://github.com/user-attachments/assets/9dc45687-90b1-497d-9933-09aa3d7d8b59)
+![speedup_main_data_type_random](https://github.com/user-attachments/assets/9983fd97-abbe-4c6e-96a5-8f808b4d618b)
+![speedup_main_data_type_perturbed](https://github.com/user-attachments/assets/58b9497d-f990-42ed-aa19-b64de0cfaa37)
+
+#### Comp 
+![speedup_comp_data_type_sorted](https://github.com/user-attachments/assets/0a3aa924-20d7-4b96-bc60-9b7d952f0194)
+![speedup_comp_data_type_reverse_sorted](https://github.com/user-attachments/assets/e622d296-1563-4ce6-9dcd-ed7c48c6d471)
+![speedup_comp_data_type_random](https://github.com/user-attachments/assets/f36be6e3-e5e9-41ef-a8b5-6384b2c54223)
+![speedup_comp_data_type_perturbed](https://github.com/user-attachments/assets/69d6ce7d-5fd7-4759-98a6-6cfd5d54603d)
+
+#### Comm
+![speedup_comm_data_type_sorted](https://github.com/user-attachments/assets/c9086eec-9a66-4dc1-86cb-57207a8b3b54)
+![speedup_comm_data_type_reverse_sorted](https://github.com/user-attachments/assets/90c502b7-989e-4ade-8ed8-ef0189204130)
+![speedup_comm_data_type_random](https://github.com/user-attachments/assets/deadf4ac-fb84-4490-a9f6-271cc6caa63a)
+![speedup_comm_data_type_perturbed](https://github.com/user-attachments/assets/1a8d28dd-f822-45a4-b725-b70dcd4c03e4)
 
 Analysis:
 It is clear from the plots that the speedup decreases for all of the types of inputs and problem sizes, though it is the highest for the larger problem sizes. The consistent decrease in speedup is likely due to growing communication overhead, as more processes require more data exchanges, and synchronization delays increase. Amdahl's Law plays a role by limiting the speedup as non-parallelizable parts of the algorithm, like merging and comparing, become bottlenecks. Load imbalances between processes, increased cache contention, and memory bandwidth issues could also further reduce efficiency. Data needs to be exchanged between processes frequently to ensure the correct ordering of elements. This communication overhead can start to dominate the benefits of parallelization, especially as the number of processes grows. The more processors involved, the more data exchanges are needed, which results in diminishing returns in speedup.
 
 
 ### Weak Scaling
-![main_sorted](https://github.com/user-attachments/assets/a1458da2-18d2-4e0e-9dbf-bbaa39137c72)
-![main_reverse](https://github.com/user-attachments/assets/e6ee400e-fcd9-4f2e-bf83-6ccbee8d3ab9)
-![main_random](https://github.com/user-attachments/assets/9ebce101-af6f-4393-a88a-196e1ef7f5d7)
-![main_perturbed](https://github.com/user-attachments/assets/1cbed48f-2766-4a86-8b05-b2d6ed66c501)
+#### Main
+![weak_scaling_main_sorted](https://github.com/user-attachments/assets/d0ad8da9-c330-48e4-9369-9cdfadab9bba)
+![weak_scaling_main_reverse_sorted](https://github.com/user-attachments/assets/2ff76cfb-d4a4-40ca-915d-f21d0ddb3c32)
+![weak_scaling_main_random](https://github.com/user-attachments/assets/ded64494-7f2a-413d-a68f-9dd3f4ddb569)
+![weak_scaling_main_1%_perturbed](https://github.com/user-attachments/assets/04c5a01a-6a93-4d2e-93dd-863a7c03b700)
+
+#### Comp
+![weak_scaling_comp_sorted](https://github.com/user-attachments/assets/434e75a0-d7c2-4217-a77c-3c03e0310f58)
+![weak_scaling_comp_reverse_sorted](https://github.com/user-attachments/assets/b9952024-50f9-4ce7-9ac2-4b02134e7e55)
+![weak_scaling_comp_random](https://github.com/user-attachments/assets/c0fd171e-29dd-4065-bc6d-e54f741c3b8c)
+![weak_scaling_comp_1%_perturbed](https://github.com/user-attachments/assets/5d907d01-fdae-4430-ab23-b9c33d51fc98)
+
+#### Comm
+![weak_scaling_comm_sorted](https://github.com/user-attachments/assets/86684df1-9945-435b-aa7a-44bfd137ea72)
+![weak_scaling_comm_reverse_sorted](https://github.com/user-attachments/assets/ab0f0898-fd5d-432b-a8ce-61110be9164a)
+![weak_scaling_comm_random](https://github.com/user-attachments/assets/c4ffdbff-6469-495f-9fb9-541141e951b4)
+![weak_scaling_comm_1%_perturbed](https://github.com/user-attachments/assets/38cda38c-bccf-4bf5-ba84-fd7e12ec9456)
 
 Analysis:
 It is observed that the average time per rank increases for the smaller problem sizes and decreases for the larger problem sizes. For smaller problem sizes, the communication overhead becomes more significant compared to the actual computation each process has to perform. Bitonic sort involves frequent communication between processes, so smaller inputs don't have enough computational work to offset the communication time. As a result, the average time per rank increases because the overhead dominates the computation. But for larger problem sizes, the amount of computation per process increases significantly, which helps amortize the communication overhead. The processes spend more time on computation relative to communication, leading to a decrease in the average time per rank. In addition, with small inputs, adding more processes doesn’t fully utilize the available resources, meaning that some processes may remain idle or underused. The increased number of processes introduces unnecessary communication and synchronization overhead for small workloads, resulting in increased time per rank. For larger inputs, however, the workload scales with the number of processes, making each process more efficiently utilized, which lowers the average time per rank.
