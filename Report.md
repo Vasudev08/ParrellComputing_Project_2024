@@ -547,3 +547,13 @@ Radix Sort Overall Performance: The plots showed behaviors mostly in line with b
 
 Notes: Due to the networking issues that many other students were facing, I was unable to successfully produce runs for 1024 processors. I was able to produce a few, which can be seen in a few of the plots above, but most other runs would hang and fail. To save credits from being unnecessarily used, I opted to just not run these and to possibly try over the weekend when there are not as many users. There are some improvements that could be made to the code, however due to issues with the Grace scheduler, getting new data has been incredibly difficult. Issues with Jupyter and with local modules also made getting plots difficult.
 
+
+## Comparing All Sorting Algoriths
+## Input Type: Main & Random
+![image](https://github.com/user-attachments/assets/b040c614-bb94-4c9e-9aa0-06e064e63b7e)
+![image](https://github.com/user-attachments/assets/d495185b-44cd-41a3-958e-0c593596e37a)
+![image](https://github.com/user-attachments/assets/25a6c8c8-c593-476f-a26c-c44895781a5b)
+![image](https://github.com/user-attachments/assets/10475f7d-c358-4572-a73e-e78381408db5)
+
+## Overal Analysis
+
