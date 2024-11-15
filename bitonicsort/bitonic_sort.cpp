@@ -16,31 +16,43 @@
 #include <adiak.hpp>
 #include <cmath>
 
-// Create input for bitonic sort
-void generateInput(std::vector<int>& arr, int size, const std::string& input_type) {
+// Parallel Input Generation
+void parallelGenerateInput(std::vector<int>& localArr, int localSize, int rank, int size, const std::string& input_type) {
+    int offset = rank * localSize;
     if (input_type == "sorted") {
-        for (int i = 0; i < size; i++) {
-            arr[i] = i;
+        for (int i = 0; i < localSize; i++) {
+            localArr[i] = offset + i;
         }
     } else if (input_type == "reverse_sorted") {
-        for (int i = 0; i < size; i++) {
-            arr[i] = size - i;
+        for (int i = 0; i < localSize; i++) {
+            localArr[i] = size - (offset + i);
         }
     } else if (input_type == "random") {
-        for (int i = 0; i < size; i++) {
-            arr[i] = rand() % 100000; // Random numbers between 0 and 100000
+        srand(static_cast<unsigned int>(time(nullptr)) + rank); // Ensure different seeds for each process
+        for (int i = 0; i < localSize; i++) {
+            localArr[i] = rand() % 100000;
         }
     } else if (input_type == "perturbed") {
-        for (int i = 0; i < size; i++) {
-            arr[i] = i;
+        for (int i = 0; i < localSize; i++) {
+            localArr[i] = offset + i;
         }
-        int swaps = size * 0.01; // 1% perturbed
+        int swaps = localSize * 0.01; // 1% perturbed
         for (int i = 0; i < swaps; i++) {
-            int idx1 = rand() % size;
-            int idx2 = rand() % size;
-            std::swap(arr[idx1], arr[idx2]);
+            int idx1 = rand() % localSize;
+            int idx2 = rand() % localSize;
+            std::swap(localArr[idx1], localArr[idx2]);
         }
     }
+}
+
+// Function to check if the array is sorted
+bool isSorted(const std::vector<int>& arr) {
+    for (size_t i = 1; i < arr.size(); ++i) {
+        if (arr[i] < arr[i - 1]) {
+            return false; // Found an element that is out of order
+        }
+    }
+    return true; // Array is sorted
 }
 
 void bitonicMerge(std::vector<int>& arr, int low, int count, bool dir) {
@@ -63,7 +75,6 @@ void bitonicSort(std::vector<int>& arr, int low, int count, bool dir) {
         bitonicSort(arr, low, k, true);  // Sort in ascending order
         bitonicSort(arr, low + k, k, false); // Sort in descending order
 
-        
         bitonicMerge(arr, low, count, dir); // Merge the result
         
     }
@@ -88,7 +99,9 @@ void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs
     double comm_time = comm_end - comm_start;
 
     // Sort the local array
+    CALI_MARK_BEGIN("comm");
     bitonicSort(localArr, 0, localSize, true);
+    CALI_MARK_END("comm");
 
     // Start communication timing for gather
     CALI_MARK_BEGIN("comm_gather");
@@ -118,15 +131,7 @@ void parallelBitonicSort(std::vector<int>& arr, int size, int rank, int numProcs
     }
 }
 
-// Function to check if the array is sorted
-bool isSorted(const std::vector<int>& arr) {
-    for (size_t i = 1; i < arr.size(); ++i) {
-        if (arr[i] < arr[i - 1]) {
-            return false; // Found an element that is out of order
-        }
-    }
-    return true; // Array is sorted
-}
+
 
 int main(int argc, char** argv) {
     // Create caliper ConfigManager object
@@ -162,29 +167,27 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    int localSize = size / numProcs;
+    std::vector<int> localArr(localSize);
+
+    // Parallel Input Generation
+    CALI_MARK_BEGIN("input_generation");
+    parallelGenerateInput(localArr, localSize, rank, size, input_type);
+    CALI_MARK_END("input_generation");
+
+    // Gather input to the root process for logging (optional)
     std::vector<int> arr;
     if (rank == 0) {
-        srand(static_cast<unsigned int>(time(nullptr)));
         arr.resize(size);
-        generateInput(arr, size, input_type);
-
-        adiak::init(NULL);
-        adiak::user();
-        adiak::launchdate();
-        adiak::libraries();
-        adiak::cmdline();
-        adiak::clustername();
-        adiak::value("algorithm", "bitonic");
-        adiak::value("programming_model", "mpi");
-        adiak::value("data_type", "int");
-        adiak::value("size_of_data_type", sizeof(int));
-        adiak::value("input_size", size);
-        adiak::value("input_type", input_type);
-        adiak::value("num_procs", numProcs);
     }
 
+    MPI_Gather(localArr.data(), localSize, MPI_INT, arr.data(), localSize, MPI_INT, 0, MPI_COMM_WORLD); 
+
+
     double start_time = MPI_Wtime();
+    CALI_MARK_BEGIN("whole_computation");
     parallelBitonicSort(arr, size, rank, numProcs);
+    CALI_MARK_END("whole_computation");
     double end_time = MPI_Wtime();
     double local_time = end_time - start_time;
 
